@@ -43,7 +43,7 @@ func Detect() (Installer, error) {
 }
 
 func SudoSession(dryRun bool) func() {
-	if dryRun {
+	if dryRun || runningAsRoot() {
 		return func() {}
 	}
 	fmt.Println("==> Authorizing sudo (one password prompt for the whole run)")
@@ -297,6 +297,17 @@ func (l *Linux) Preinstalled(items []catalog.Item) map[string]bool {
 	return out
 }
 
+func runningAsRoot() bool {
+	return os.Geteuid() == 0
+}
+
+func elevate(args ...string) []string {
+	if runningAsRoot() {
+		return args
+	}
+	return append([]string{"sudo"}, args...)
+}
+
 func (l *Linux) Install(items []catalog.Item, skip map[string]bool, dryRun bool) Result {
 	var res Result
 	for _, it := range items {
@@ -316,17 +327,19 @@ func (l *Linux) Install(items []catalog.Item, skip map[string]bool, dryRun bool)
 			res.Skipped = append(res.Skipped, it.Name)
 			continue
 		}
+		installCmd := elevate(l.cmd, "install", "-y", pkg)
 		if dryRun {
-			fmt.Printf("[dry-run] sudo %s install -y %s\n", l.cmd, pkg)
+			fmt.Printf("[dry-run] %s\n", strings.Join(installCmd, " "))
 			res.Installed = append(res.Installed, it.Name)
 			continue
 		}
 		if l.cmd == "apt-get" && !l.updated {
-			_ = run("sudo", "apt-get", "update")
+			updateCmd := elevate("apt-get", "update")
+			_ = run(updateCmd[0], updateCmd[1:]...)
 			l.updated = true
 		}
 		fmt.Printf("\n==> Installing %s\n", it.Name)
-		if err := run("sudo", l.cmd, "install", "-y", pkg); err != nil {
+		if err := run(installCmd[0], installCmd[1:]...); err != nil {
 			res.Failed = append(res.Failed, it.Name)
 		} else {
 			res.Installed = append(res.Installed, it.Name)
