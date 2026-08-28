@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/charmbracelet/huh"
 
@@ -29,19 +30,19 @@ func interactivePlan(mac bool, preinstalled map[string]bool) (plan, error) {
 	for _, it := range preselected {
 		pre[it.Name] = true
 	}
-	cliOpts, caskOpts := itemOptions(pre, preinstalled)
+	cliOpts, caskOpts, cliDone, caskDone := itemOptions(pre, preinstalled)
 
 	var cliNames, caskNames, settingNames []string
 	doDotfiles := !skipDotfiles
 
 	groups := []*huh.Group{
-		multiSelectGroup("Step 1/3 — CLI tools", cliOpts, &cliNames),
+		multiSelectGroup("Step 1/3 — CLI tools", cliOpts, cliDone, &cliNames),
 	}
 	if mac {
-		groups = append(groups, multiSelectGroup("Step 2/3 — Apps (casks)", caskOpts, &caskNames))
+		groups = append(groups, multiSelectGroup("Step 2/3 — Apps (casks)", caskOpts, caskDone, &caskNames))
 	}
 	if mac && !skipDefaults && tier != catalog.Server {
-		groups = append(groups, multiSelectGroup("Step 3/3 — macOS settings", settingOptions(), &settingNames))
+		groups = append(groups, multiSelectGroup("Step 3/3 — macOS settings", settingOptions(), nil, &settingNames))
 	}
 	groups = append(groups, huh.NewGroup(huh.NewConfirm().
 		Title("Link dotfiles from ~/dotfiles?").
@@ -50,8 +51,16 @@ func interactivePlan(mac bool, preinstalled map[string]bool) (plan, error) {
 	if err := huh.NewForm(groups...).Run(); err != nil {
 		return plan{}, err
 	}
+	items := itemsByName(append(cliNames, caskNames...))
+	// installed items aren't offered in the checklists; carry the tier's ones
+	// back into the plan so they show up as skipped
+	for _, it := range catalog.Items {
+		if pre[it.Name] && preinstalled[it.Name] {
+			items = append(items, it)
+		}
+	}
 	return plan{
-		items:      itemsByName(append(cliNames, caskNames...)),
+		items:      items,
 		settings:   settingsByName(settingNames),
 		doDotfiles: doDotfiles,
 	}, nil
@@ -80,20 +89,24 @@ func askTier() (catalog.Tier, error) {
 	return catalog.Daily, nil
 }
 
-func itemOptions(pre, preinstalled map[string]bool) (clis, casks []huh.Option[string]) {
+func itemOptions(pre, preinstalled map[string]bool) (clis, casks []huh.Option[string], clisDone, casksDone []string) {
 	for _, it := range catalog.Items {
-		label := fmt.Sprintf("%s — %s", it.Name, it.Desc)
 		if preinstalled[it.Name] {
-			label += " (installed)"
+			if it.Cask {
+				casksDone = append(casksDone, it.Name)
+			} else {
+				clisDone = append(clisDone, it.Name)
+			}
+			continue
 		}
-		opt := huh.NewOption(label, it.Name).Selected(pre[it.Name])
+		opt := huh.NewOption(fmt.Sprintf("%s — %s", it.Name, it.Desc), it.Name).Selected(pre[it.Name])
 		if it.Cask {
 			casks = append(casks, opt)
 		} else {
 			clis = append(clis, opt)
 		}
 	}
-	return clis, casks
+	return clis, casks, clisDone, casksDone
 }
 
 func settingOptions() []huh.Option[string] {
@@ -104,12 +117,18 @@ func settingOptions() []huh.Option[string] {
 	return opts
 }
 
-func multiSelectGroup(title string, opts []huh.Option[string], value *[]string) *huh.Group {
-	return huh.NewGroup(huh.NewMultiSelect[string]().
+func multiSelectGroup(title string, opts []huh.Option[string], installed []string, value *[]string) *huh.Group {
+	fields := []huh.Field{}
+	if len(installed) > 0 {
+		fields = append(fields, huh.NewNote().
+			Description(fmt.Sprintf("Already installed, skipped: %s", strings.Join(installed, ", "))))
+	}
+	fields = append(fields, huh.NewMultiSelect[string]().
 		Title(title).
 		Options(opts...).
 		Height(14).
 		Value(value))
+	return huh.NewGroup(fields...)
 }
 
 func itemsByName(names []string) []catalog.Item {

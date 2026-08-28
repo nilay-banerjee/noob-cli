@@ -4,7 +4,17 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/charmbracelet/lipgloss"
+
 	"github.com/nilay-banerjee/noob-cli/internal/installer"
+)
+
+var (
+	headStyle = lipgloss.NewStyle().Bold(true)
+	okStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("42"))
+	dimStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("245"))
+	warnStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("214"))
+	failStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("196"))
 )
 
 func printPlan(p plan, preinstalled map[string]bool, mac bool) {
@@ -13,7 +23,7 @@ func printPlan(p plan, preinstalled map[string]bool, mac bool) {
 	for _, it := range p.items {
 		name := it.Name
 		if preinstalled[it.Name] {
-			name += " ✓"
+			name = dimStyle.Render(name + " ✓")
 			skipped++
 		}
 		if it.Cask {
@@ -22,7 +32,8 @@ func printPlan(p plan, preinstalled map[string]bool, mac bool) {
 			clis = append(clis, name)
 		}
 	}
-	fmt.Printf("Plan:\n  CLIs:  %s\n", strings.Join(clis, ", "))
+	fmt.Println(headStyle.Render("Plan"))
+	fmt.Printf("  CLIs:  %s\n", strings.Join(clis, ", "))
 	if mac && len(casks) > 0 {
 		fmt.Printf("  Casks: %s\n", strings.Join(casks, ", "))
 	}
@@ -35,25 +46,35 @@ func printPlan(p plan, preinstalled map[string]bool, mac bool) {
 	}
 	fmt.Printf("  Dotfiles: %v\n", p.doDotfiles)
 	if skipped > 0 {
-		fmt.Printf("  ✓ = already installed, %d will be skipped\n", skipped)
+		fmt.Println(dimStyle.Render(fmt.Sprintf("  ✓ = already installed, %d will be skipped", skipped)))
 	}
 }
 
 func printSummary(res installer.Result) {
-	fmt.Println("\nDone.")
+	fmt.Println()
+	fmt.Println(headStyle.Render("Summary"))
 	if len(res.Installed) > 0 {
-		fmt.Printf("  installed: %s\n", strings.Join(res.Installed, ", "))
+		fmt.Printf("  %s %s\n",
+			okStyle.Render(fmt.Sprintf("✓ installed (%d):", len(res.Installed))),
+			strings.Join(res.Installed, ", "))
 	}
 	if len(res.Skipped) > 0 {
-		fmt.Printf("  already there: %s\n", strings.Join(res.Skipped, ", "))
+		fmt.Printf("  %s\n",
+			dimStyle.Render(fmt.Sprintf("• already there (%d): %s", len(res.Skipped), strings.Join(res.Skipped, ", "))))
 	}
 	if len(res.Manual) > 0 {
-		fmt.Println("  needs manual install:")
+		fmt.Printf("  %s\n", warnStyle.Render(fmt.Sprintf("! needs manual install (%d):", len(res.Manual))))
 		for _, m := range res.Manual {
-			fmt.Printf("    - %s\n", m)
+			fmt.Printf("      - %s\n", m)
 		}
 	}
 	if len(res.Failed) > 0 {
-		fmt.Printf("  FAILED: %s\n", strings.Join(res.Failed, ", "))
+		fmt.Printf("  %s %s\n",
+			failStyle.Render(fmt.Sprintf("✗ failed (%d):", len(res.Failed))),
+			strings.Join(res.Failed, ", "))
+		fmt.Println(dimStyle.Render("    re-run noob-cli to retry just these — everything else is skipped"))
+	}
+	if len(res.Installed)+len(res.Skipped)+len(res.Manual)+len(res.Failed) == 0 {
+		fmt.Println(dimStyle.Render("  nothing to do"))
 	}
 }
