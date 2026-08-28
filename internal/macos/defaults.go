@@ -66,12 +66,16 @@ const capsAgentPlist = `<?xml version="1.0" encoding="UTF-8"?>
 </plist>
 `
 
+func CapsAgentPlist() string {
+	home, _ := os.UserHomeDir()
+	return filepath.Join(home, "Library/LaunchAgents/com.noob-cli.caps-to-ctrl.plist")
+}
+
 func capsToCtrl(dryRun bool) error {
 	if err := run(dryRun, "hidutil", "property", "--set", capsMapping); err != nil {
 		return err
 	}
-	home, _ := os.UserHomeDir()
-	plist := filepath.Join(home, "Library/LaunchAgents/com.noob-cli.caps-to-ctrl.plist")
+	plist := CapsAgentPlist()
 	if dryRun {
 		fmt.Printf("[dry-run] write LaunchAgent %s\n", plist)
 		return nil

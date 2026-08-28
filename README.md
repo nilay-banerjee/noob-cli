@@ -67,11 +67,12 @@ Unknown names in `--include`/`--exclude` fail fast and print the supported list.
   fastfetch, lazygit, gh, git-delta, mise, tree, make. No GUI apps, no settings
   changes. This is the one to run on a Linux box. When fzf is selected, fzf-git.sh
   is cloned to `~/fzf-git.sh` too (`.zshrc` sources it).
-- **daily** (default): server + yarn, watchman, and the mac apps I actually open
-  every day: Arc, Chrome, Ghostty, Raycast, Spotify, WhatsApp, FDM, Obsidian,
-  1Password, Slack, VS Code, AeroSpace, Claude, Claude Code, Docker Desktop.
-- **ultimate**: daily + Discord, OBS, BetterDisplay, Hidden Bar, Firefox, VLC,
-  Zoom, AnyDesk, Tailscale, ffmpeg, iperf3.
+- **daily** (default): server + the mac apps I actually open every day: Arc,
+  Chrome, Ghostty, Raycast, Spotify, WhatsApp, FDM, Obsidian, 1Password,
+  VS Code, AeroSpace, Claude, Claude Code, Docker Desktop, Meslo Nerd Font.
+- **ultimate**: daily + work/dev extras (yarn, watchman, Slack) and Discord,
+  OBS, BetterDisplay, Hidden Bar, Firefox, VLC, Zoom, AnyDesk, Tailscale,
+  ffmpeg, iperf3.
 
 Full catalog with package names per platform: [docs/apps.md](docs/apps.md).
 
@@ -84,6 +85,15 @@ Configs live in a git repo at `~/dotfiles` and get symlinked into place, so edit
 noob-cli dotfiles init   # on this machine: move live configs into ~/dotfiles, symlink back, git init
 noob-cli dotfiles link   # on a fresh machine: symlink ~/dotfiles configs into place
 ```
+
+## Maintenance
+
+```sh
+noob-cli doctor    # verify the machine: links, clones, font, settings, zsh/nvim load, dotfiles sync
+noob-cli upgrade   # replace this binary with the latest GitHub release
+```
+
+`doctor` exits non-zero when something is off and says how to fix each item.
 
 Details and the full symlink map: [docs/dotfiles.md](docs/dotfiles.md).
 

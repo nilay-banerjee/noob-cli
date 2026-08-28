@@ -32,8 +32,6 @@ installer lists it under "needs manual install" with a hint instead of failing.
 
 | Name | What | brew |
 |---|---|---|
-| yarn | JS package manager | yarn |
-| watchman | file watcher | watchman |
 | arc | Arc browser | arc (cask) |
 | google-chrome | Chrome | google-chrome (cask) |
 | ghostty | terminal | ghostty (cask) |
@@ -44,7 +42,6 @@ installer lists it under "needs manual install" with a hint instead of failing.
 | free-download-manager | FDM | free-download-manager (cask) |
 | obsidian | notes | obsidian (cask) |
 | 1password | password manager | 1password (cask) |
-| slack | work chat | slack (cask) |
 | visual-studio-code | VS Code | visual-studio-code (cask) |
 | aerospace | tiling WM | nikitabobko/tap/aerospace (cask) |
 | claude | Claude desktop | claude (cask) |
@@ -55,6 +52,9 @@ installer lists it under "needs manual install" with a hint instead of failing.
 
 | Name | What | brew |
 |---|---|---|
+| yarn | JS package manager | yarn |
+| watchman | file watcher | watchman |
+| slack | work chat | slack (cask) |
 | ffmpeg | media tooling | ffmpeg (also apt/dnf) |
 | iperf3 | network throughput | iperf3 (also apt/dnf) |
 | discord | Discord | discord (cask) |
