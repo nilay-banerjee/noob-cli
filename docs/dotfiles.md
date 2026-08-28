@@ -14,6 +14,7 @@ shows what changed.
 | `~/.config/nvim` | `~/dotfiles/config/nvim` |
 | `~/.config/aerospace` | `~/dotfiles/config/aerospace` |
 | `~/.config/ghostty` | `~/dotfiles/config/ghostty` |
+| `~/Library/Application Support/com.mitchellh.ghostty/config` | `~/dotfiles/ghostty/config` (macOS) |
 | `~/.config/lazygit` | `~/dotfiles/config/lazygit` |
 
 Paths that don't exist on a machine are skipped. Adding a config means adding one

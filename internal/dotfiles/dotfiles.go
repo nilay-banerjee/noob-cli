@@ -21,6 +21,7 @@ var Links = []Link{
 	{Repo: "config/nvim", Home: ".config/nvim"},
 	{Repo: "config/aerospace", Home: ".config/aerospace"},
 	{Repo: "config/ghostty", Home: ".config/ghostty"},
+	{Repo: "ghostty/config", Home: "Library/Application Support/com.mitchellh.ghostty/config"},
 	{Repo: "config/lazygit", Home: ".config/lazygit"},
 }
 
