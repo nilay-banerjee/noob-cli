@@ -91,7 +91,12 @@ func (b *Brew) Bootstrap(dryRun bool) error {
 		return err
 	}
 	defer os.Remove(script)
-	if err := run("/bin/bash", script); err != nil {
+	// safe to skip the installer's own prompts: SudoKeepalive already cached credentials
+	cmd := exec.Command("/bin/bash", script)
+	cmd.Env = append(os.Environ(), "NONINTERACTIVE=1")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
 		return err
 	}
 	if !brewOnPath() {
