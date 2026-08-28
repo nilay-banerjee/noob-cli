@@ -55,7 +55,7 @@ func init() {
 	rootCmd.Flags().BoolVar(&dryRun, "dry-run", false, "print what would happen without changing anything")
 	rootCmd.Flags().BoolVar(&skipDefaults, "skip-defaults", false, "don't touch macOS settings")
 	rootCmd.Flags().BoolVar(&skipDotfiles, "skip-dotfiles", false, "don't link dotfiles")
-	rootCmd.Flags().StringVar(&dotfilesRepo, "dotfiles-repo", "", "git URL to clone into ~/dotfiles if it's missing")
+	rootCmd.Flags().StringVar(&dotfilesRepo, "dotfiles-repo", "", "git URL to clone into ~/dotfiles if it's missing (default "+dotfiles.DefaultRepo+")")
 }
 
 func runSetup(cmd *cobra.Command, args []string) error {
@@ -68,6 +68,9 @@ func runSetup(cmd *cobra.Command, args []string) error {
 	inst, err := installer.Detect()
 	if err != nil {
 		return err
+	}
+	if err := inst.Bootstrap(dryRun); err != nil {
+		return fmt.Errorf("homebrew bootstrap failed: %w\nFix that (the account needs to be an Administrator), then re-run noob-cli — everything is safe to re-run", err)
 	}
 	res := inst.Install(p.items, dryRun)
 

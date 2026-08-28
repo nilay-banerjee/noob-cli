@@ -42,13 +42,13 @@ git push -u origin main
 ## Fresh machine
 
 ```sh
-noob-cli dotfiles link --dotfiles-repo git@github.com:nilay-banerjee/dotfiles.git
+noob-cli dotfiles link
 ```
 
-Clones if `~/dotfiles` is missing, then symlinks every repo config into place.
+Clones `https://github.com/nilay-banerjee/dotfiles.git` if `~/dotfiles` is missing
+(override with `--dotfiles-repo`), then symlinks every repo config into place.
 Existing real files (like the stock `.zshrc` a fresh install ships) are moved to a
 timestamped backup dir under `$TMPDIR` first, and the path is printed.
 
-The main `noob-cli` setup run does the same linking at the end unless
-`--skip-dotfiles` is passed; without `--dotfiles-repo` and no `~/dotfiles` it just
-prints how to do it and moves on.
+The main `noob-cli` setup run does the same clone-and-link at the end unless
+`--skip-dotfiles` is passed.

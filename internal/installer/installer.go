@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"strings"
 
@@ -18,6 +19,7 @@ type Result struct {
 }
 
 type Installer interface {
+	Bootstrap(dryRun bool) error
 	Install(items []catalog.Item, dryRun bool) Result
 }
 
@@ -44,17 +46,24 @@ func run(name string, args ...string) error {
 
 type Brew struct{}
 
-func (b *Brew) ensure(dryRun bool) error {
+// piping curl into bash would make the installer's stdin the pipe, so it
+// couldn't prompt for sudo — download first, then run with the terminal attached
+func (b *Brew) Bootstrap(dryRun bool) error {
 	if brewOnPath() {
 		return nil
 	}
 	if dryRun {
-		fmt.Println("[dry-run] would install Homebrew")
+		fmt.Println("[dry-run] would install Homebrew (and Xcode Command Line Tools with it)")
 		return nil
 	}
-	fmt.Println("Homebrew not found, installing it first...")
-	if err := run("/bin/bash", "-c",
-		`curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | /bin/bash`); err != nil {
+	fmt.Println("Homebrew not found, installing it first (you'll be asked for your password)...")
+	script := filepath.Join(os.TempDir(), "brew-install.sh")
+	if err := run("curl", "-fsSL", "-o", script,
+		"https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh"); err != nil {
+		return err
+	}
+	defer os.Remove(script)
+	if err := run("/bin/bash", script); err != nil {
 		return err
 	}
 	if !brewOnPath() {
@@ -94,10 +103,6 @@ func (b *Brew) installedSet() map[string]bool {
 
 func (b *Brew) Install(items []catalog.Item, dryRun bool) Result {
 	var res Result
-	if err := b.ensure(dryRun); err != nil {
-		res.Failed = append(res.Failed, "homebrew: "+err.Error())
-		return res
-	}
 	installed := map[string]bool{}
 	if !dryRun {
 		installed = b.installedSet()
@@ -138,6 +143,10 @@ type Linux struct {
 	query   []string
 	pkgName func(catalog.Item) string
 	updated bool
+}
+
+func (l *Linux) Bootstrap(dryRun bool) error {
+	return nil
 }
 
 func (l *Linux) isInstalled(pkg string) bool {

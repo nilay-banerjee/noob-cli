@@ -116,12 +116,14 @@ func Init(dryRun bool) error {
 	return nil
 }
 
+const DefaultRepo = "https://github.com/nilay-banerjee/dotfiles.git"
+
 // Setup makes ~/dotfiles configs live on this machine: clone if needed, then symlink.
 func Setup(repoURL string, dryRun bool) error {
+	if repoURL == "" {
+		repoURL = DefaultRepo
+	}
 	if _, err := os.Stat(RepoDir()); os.IsNotExist(err) {
-		if repoURL == "" {
-			return fmt.Errorf("~/dotfiles does not exist; pass --dotfiles-repo <url> to clone it, or run `noob-cli dotfiles init` on a machine that has your configs")
-		}
 		if dryRun {
 			fmt.Printf("[dry-run] git clone %s ~/dotfiles\n", repoURL)
 		} else {
