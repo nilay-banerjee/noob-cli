@@ -76,8 +76,17 @@ func gatherChecks() []checkResult {
 		checks = append(checks, checkSettings()...)
 	}
 	checks = append(checks, checkDotfileLinks(), checkDotfilesClean(), checkDotfilesSynced())
-	checks = append(checks, checkGitConfigLocal(), checkExtras(), checkShell(), checkNvim())
+	checks = append(checks, checkGitConfigLocal(), checkExtras(), checkNode(), checkShell(), checkNvim())
 	return checks
+}
+
+func checkNode() checkResult {
+	if _, err := exec.LookPath("node"); err != nil {
+		return checkResult{"node", false, "not on PATH — nvim LSPs and JS tooling need it", func() error {
+			return extras.NodeViaNvm(false)
+		}}
+	}
+	return checkResult{"node", true, "", nil}
 }
 
 func checkGitConfigLocal() checkResult {

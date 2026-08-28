@@ -26,7 +26,8 @@ go build -o noob-cli .
 ```
 
 noob-cli installs Homebrew itself if it's missing. Cutting a new release is
-`scripts/release.sh v0.x.y` (cross-compiles, tags, pushes, publishes with gh).
+`scripts/release.sh v0.x.y` — it tags and pushes; GitHub Actions builds all
+four binaries and publishes the release.
 
 Don't run noob-cli with sudo: Homebrew refuses to run as root, and files written
 to `$HOME` would end up root-owned. noob-cli asks for your password once at the
@@ -69,7 +70,8 @@ Unknown names in `--include`/`--exclude` fail fast and print the supported list.
   is cloned to `~/fzf-git.sh` too (`.zshrc` sources it).
 - **daily** (default): server + the mac apps I actually open every day: Arc,
   Chrome, Ghostty, Raycast, Spotify, WhatsApp, FDM, Obsidian, 1Password,
-  VS Code, AeroSpace, Claude, Claude Code, Docker Desktop, Meslo Nerd Font.
+  VS Code, AeroSpace, Claude, Claude Code, colima + Docker CLI, Meslo Nerd
+  Font. Node arrives via nvm (LTS) if no node is on PATH.
 - **ultimate**: daily + work/dev extras (yarn, watchman, Slack) and Discord,
   OBS, BetterDisplay, Hidden Bar, Firefox, VLC, Zoom, AnyDesk, Tailscale,
   ffmpeg, iperf3.

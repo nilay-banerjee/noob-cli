@@ -43,6 +43,26 @@ func RequiredDirs() []string {
 	return dirs
 }
 
+func NodeViaNvm(dryRun bool) error {
+	if _, err := exec.LookPath("node"); err == nil {
+		fmt.Println("  node already available")
+		return nil
+	}
+	home, _ := os.UserHomeDir()
+	nvmDir := filepath.Join(home, ".nvm")
+	if err := clone("https://github.com/nvm-sh/nvm.git", nvmDir, dryRun); err != nil {
+		return err
+	}
+	if dryRun {
+		fmt.Println("[dry-run] nvm install --lts")
+		return nil
+	}
+	cmd := exec.Command("bash", "-c", "source "+nvmDir+"/nvm.sh && nvm install --lts")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
+}
+
 func CloneTmuxTpm(dryRun bool) error {
 	t := tmuxTpmTarget()
 	if err := clone(t.url, t.dir, dryRun); err != nil {

@@ -89,7 +89,8 @@ var Items = []Item{
 	{Name: "aerospace", Desc: "tiling window manager", Cask: true, Tier: Daily, Brew: "nikitabobko/tap/aerospace", AppBundle: "AeroSpace.app"},
 	{Name: "claude", Desc: "Claude desktop", Cask: true, Tier: Daily, Brew: "claude", AppBundle: "Claude.app"},
 	{Name: "claude-code", Desc: "Claude Code CLI", Cask: true, Tier: Daily, Brew: "claude-code@latest", Bin: "claude"},
-	{Name: "docker", Desc: "Docker Desktop", Cask: true, Tier: Daily, Brew: "docker-desktop", AppBundle: "Docker.app"},
+	{Name: "colima", Desc: "container runtime VM (Docker Desktop replacement)", Tier: Daily, Brew: "colima", Hint: "on Linux docker.io runs natively, colima not needed"},
+	{Name: "docker", Desc: "Docker CLI (talks to colima)", Tier: Daily, Brew: "docker", Apt: "docker.io", Dnf: "docker"},
 
 	{Name: "ffmpeg", Desc: "media swiss army knife", Tier: Ultimate, Brew: "ffmpeg", Apt: "ffmpeg", Dnf: "ffmpeg"},
 	{Name: "iperf3", Desc: "network throughput testing", Tier: Ultimate, Brew: "iperf3", Apt: "iperf3", Dnf: "iperf3"},

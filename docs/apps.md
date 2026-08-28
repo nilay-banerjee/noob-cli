@@ -48,7 +48,8 @@ installer lists it under "needs manual install" with a hint instead of failing.
 | aerospace | tiling WM | nikitabobko/tap/aerospace (cask) |
 | claude | Claude desktop | claude (cask) |
 | claude-code | Claude Code CLI | claude-code@latest (cask) |
-| docker | Docker Desktop | docker-desktop (cask) |
+| colima | container runtime VM | colima (macOS; Linux runs docker natively) |
+| docker | Docker CLI | docker (apt: docker.io, dnf: docker) |
 
 ## ultimate tier (adds to daily)
 

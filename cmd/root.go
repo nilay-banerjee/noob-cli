@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"runtime"
 
 	"github.com/spf13/cobra"
@@ -116,6 +117,18 @@ func runSetup(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	fmt.Println("\n==> node (via nvm)")
+	if err := extras.NodeViaNvm(dryRun); err != nil {
+		fmt.Printf("  failed: %v\n", err)
+	}
+
+	if mac && hasItem(p.items, "colima") {
+		fmt.Println("\n==> colima")
+		if err := startColima(dryRun); err != nil {
+			fmt.Printf("  failed: %v\n", err)
+		}
+	}
+
 	for _, s := range p.settings {
 		fmt.Printf("\n==> Setting: %s\n", s.Desc)
 		if err := s.Apply(dryRun); err != nil {
@@ -181,6 +194,21 @@ func defaultSettings(tier catalog.Tier, items []catalog.Item, mac bool) []macos.
 		out = append(out, s)
 	}
 	return out
+}
+
+func startColima(dryRun bool) error {
+	if dryRun {
+		fmt.Println("[dry-run] colima start")
+		return nil
+	}
+	if exec.Command("colima", "status").Run() == nil {
+		fmt.Println("  colima already running")
+		return nil
+	}
+	c := exec.Command("colima", "start")
+	c.Stdout = os.Stdout
+	c.Stderr = os.Stderr
+	return c.Run()
 }
 
 func hasItem(items []catalog.Item, name string) bool {
