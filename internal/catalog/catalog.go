@@ -46,6 +46,7 @@ var Items = []Item{
 	{Name: "neovim", Desc: "editor", Tier: Server, Brew: "neovim", Apt: "neovim", Dnf: "neovim"},
 	{Name: "tmux", Desc: "terminal multiplexer", Tier: Server, Brew: "tmux", Apt: "tmux", Dnf: "tmux"},
 	{Name: "fzf", Desc: "fuzzy finder", Tier: Server, Brew: "fzf", Apt: "fzf", Dnf: "fzf"},
+	{Name: "fd", Desc: "fast find, used by the fzf config", Tier: Server, Brew: "fd", Apt: "fd-find", Dnf: "fd-find", Hint: "apt names the binary fdfind"},
 	{Name: "ripgrep", Desc: "fast grep", Tier: Server, Brew: "ripgrep", Apt: "ripgrep", Dnf: "ripgrep"},
 	{Name: "bat", Desc: "cat with syntax highlighting", Tier: Server, Brew: "bat", Apt: "bat", Dnf: "bat", Hint: "installed as `batcat` on Debian/Ubuntu"},
 	{Name: "eza", Desc: "modern ls", Tier: Server, Brew: "eza", Apt: "eza", Dnf: "eza", Hint: "needs Ubuntu 24.04+ / Debian 13+, otherwise see eza.rocks"},

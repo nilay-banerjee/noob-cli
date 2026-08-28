@@ -57,9 +57,10 @@ Unknown names in `--include`/`--exclude` fail fast and print the supported list.
 
 ## Tiers
 
-- **server**: git, zsh + plugins, neovim, tmux, fzf, ripgrep, bat, eza, zoxide,
+- **server**: git, zsh + plugins, neovim, tmux, fzf, fd, ripgrep, bat, eza, zoxide,
   fastfetch, lazygit, gh, git-delta, mise, tree, make. No GUI apps, no settings
-  changes. This is the one to run on a Linux box.
+  changes. This is the one to run on a Linux box. When fzf is selected, fzf-git.sh
+  is cloned to `~/fzf-git.sh` too (`.zshrc` sources it).
 - **daily** (default): server + yarn, watchman, and the mac apps I actually open
   every day: Arc, Chrome, Ghostty, Raycast, Spotify, WhatsApp, FDM, Obsidian,
   1Password, Slack, VS Code, AeroSpace, Claude, Claude Code, Docker Desktop.

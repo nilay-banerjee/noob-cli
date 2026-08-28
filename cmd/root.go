@@ -9,6 +9,7 @@ import (
 
 	"github.com/nilay-banerjee/noob-cli/internal/catalog"
 	"github.com/nilay-banerjee/noob-cli/internal/dotfiles"
+	"github.com/nilay-banerjee/noob-cli/internal/extras"
 	"github.com/nilay-banerjee/noob-cli/internal/installer"
 	"github.com/nilay-banerjee/noob-cli/internal/macos"
 )
@@ -77,6 +78,13 @@ func runSetup(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	if hasItem(p.items, "fzf") {
+		fmt.Println("\n==> fzf-git.sh")
+		if err := extras.FzfGit(dryRun); err != nil {
+			fmt.Printf("  failed: %v\n", err)
+		}
+	}
+
 	for _, s := range p.settings {
 		fmt.Printf("\n==> Setting: %s\n", s.Desc)
 		if err := s.Apply(dryRun); err != nil {
@@ -134,20 +142,23 @@ func defaultSettings(tier catalog.Tier, items []catalog.Item, mac bool) []macos.
 	if !mac || skipDefaults || tier == catalog.Server {
 		return nil
 	}
-	hasRaycast := false
-	for _, it := range items {
-		if it.Name == "raycast" {
-			hasRaycast = true
-		}
-	}
 	var out []macos.Setting
 	for _, s := range macos.Settings {
-		if s.Name == "raycast-hotkey" && !hasRaycast {
+		if s.Name == "raycast-hotkey" && !hasItem(items, "raycast") {
 			continue
 		}
 		out = append(out, s)
 	}
 	return out
+}
+
+func hasItem(items []catalog.Item, name string) bool {
+	for _, it := range items {
+		if it.Name == name {
+			return true
+		}
+	}
+	return false
 }
 
 func isTTY() bool {

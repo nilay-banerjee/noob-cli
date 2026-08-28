@@ -15,6 +15,7 @@ installer lists it under "needs manual install" with a hint instead of failing.
 | neovim | editor | neovim | neovim | neovim |
 | tmux | terminal multiplexer | tmux | tmux | tmux |
 | fzf | fuzzy finder | fzf | fzf | fzf |
+| fd | fast find (fzf uses it) | fd | fd-find (binary is `fdfind`) | fd-find |
 | ripgrep | fast grep | ripgrep | ripgrep | ripgrep |
 | bat | cat with highlighting | bat | bat (binary is `batcat`) | bat |
 | eza | modern ls | eza | eza (Ubuntu 24.04+) | eza |
@@ -64,6 +65,12 @@ installer lists it under "needs manual install" with a hint instead of failing.
 | zoom | video calls | zoom (cask) |
 | anydesk | remote desktop | anydesk (cask) |
 | tailscale | mesh VPN | tailscale-app (cask) |
+
+## Extras (not packages)
+
+When fzf is selected, noob-cli also clones
+[fzf-git.sh](https://github.com/junegunn/fzf-git.sh) to `~/fzf-git.sh`, because
+`.zshrc` sources it for git-aware fzf keybindings.
 
 ## Deliberately not in the catalog
 
