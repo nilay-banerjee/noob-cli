@@ -37,6 +37,7 @@ installer lists it under "needs manual install" with a hint instead of failing.
 | arc | Arc browser | arc (cask) |
 | google-chrome | Chrome | google-chrome (cask) |
 | ghostty | terminal | ghostty (cask) |
+| meslo-nerd-font | MesloLGS Nerd Font (p10k + Ghostty need it) | font-meslo-lg-nerd-font (cask) |
 | raycast | launcher | raycast (cask) |
 | spotify | music | spotify (cask) |
 | whatsapp | WhatsApp | whatsapp (cask) |

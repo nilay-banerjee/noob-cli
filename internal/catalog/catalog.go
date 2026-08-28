@@ -65,6 +65,7 @@ var Items = []Item{
 	{Name: "arc", Desc: "Arc browser", Cask: true, Tier: Daily, Brew: "arc"},
 	{Name: "google-chrome", Desc: "Chrome", Cask: true, Tier: Daily, Brew: "google-chrome"},
 	{Name: "ghostty", Desc: "terminal", Cask: true, Tier: Daily, Brew: "ghostty"},
+	{Name: "meslo-nerd-font", Desc: "font for the p10k prompt and Ghostty", Cask: true, Tier: Daily, Brew: "font-meslo-lg-nerd-font"},
 	{Name: "raycast", Desc: "launcher", Cask: true, Tier: Daily, Brew: "raycast"},
 	{Name: "spotify", Desc: "music", Cask: true, Tier: Daily, Brew: "spotify"},
 	{Name: "whatsapp", Desc: "WhatsApp", Cask: true, Tier: Daily, Brew: "whatsapp"},
