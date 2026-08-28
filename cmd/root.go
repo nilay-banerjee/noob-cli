@@ -71,12 +71,18 @@ func runSetup(cmd *cobra.Command, args []string) error {
 	}
 	printPlan(p, preinstalled, mac)
 
-	stopSudo := installer.SudoKeepalive(dryRun)
+	stopSudo := installer.SudoSession(dryRun)
 	defer stopSudo()
 	if err := inst.Bootstrap(dryRun); err != nil {
 		return fmt.Errorf("homebrew bootstrap failed: %w\nFix that (the account needs to be an Administrator), then re-run noob-cli — everything is safe to re-run", err)
 	}
 	res := inst.Install(p.items, preinstalled, dryRun)
+	if len(res.Failed) > 0 && !dryRun {
+		fmt.Printf("\n==> Retrying %d failed install(s)\n", len(res.Failed))
+		retry := inst.Install(itemsByName(res.Failed), nil, false)
+		res.Installed = append(res.Installed, retry.Installed...)
+		res.Failed = retry.Failed
+	}
 
 	if p.doDotfiles {
 		fmt.Println("\n==> Dotfiles")

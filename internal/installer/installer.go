@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"golang.org/x/term"
+
 	"github.com/nilay-banerjee/noob-cli/internal/catalog"
 )
 
@@ -27,6 +29,9 @@ type Installer interface {
 
 func Detect() (Installer, error) {
 	if runtime.GOOS == "darwin" {
+		brewOnPath()
+		// new brew's ask mode y/n-prompts whenever dependencies are involved
+		os.Setenv("HOMEBREW_NO_ASK", "1")
 		return &Brew{}, nil
 	}
 	if _, err := exec.LookPath("apt-get"); err == nil {
@@ -38,17 +43,37 @@ func Detect() (Installer, error) {
 	return nil, fmt.Errorf("no supported package manager found (need brew, apt-get, or dnf)")
 }
 
-// one password prompt up front, then a background refresh keeps the sudo
-// timestamp warm so nothing else prompts mid-run
-func SudoKeepalive(dryRun bool) func() {
+// One password prompt for the whole run. A warm sudo timestamp isn't enough:
+// brew wipes it on purpose (brew.sh runs `sudo --reset-timestamp`), so the
+// password is kept in a private temp file behind SUDO_ASKPASS, which makes
+// brew call `sudo -A` and fetch it instead of prompting. Removed on exit.
+func SudoSession(dryRun bool) func() {
 	if dryRun {
 		return func() {}
 	}
-	fmt.Println("==> Pre-authorizing sudo (one password prompt for the whole run)")
-	if err := run("sudo", "-v"); err != nil {
-		fmt.Println("  couldn't pre-authorize sudo; installs may prompt individually")
+	fmt.Println("==> Authorizing sudo (one password prompt for the whole run)")
+	password, ok := askPassword()
+	if !ok {
+		fmt.Println("  couldn't authorize sudo; installs may prompt individually")
 		return func() {}
 	}
+
+	cleanup := func() {}
+	if password != "" {
+		if dir, err := os.MkdirTemp("", "noob-cli-sudo-*"); err == nil {
+			pwFile := filepath.Join(dir, "pw")
+			script := filepath.Join(dir, "askpass.sh")
+			if os.WriteFile(pwFile, []byte(password+"\n"), 0o600) == nil &&
+				os.WriteFile(script, []byte("#!/bin/sh\nexec cat "+pwFile+"\n"), 0o700) == nil {
+				os.Setenv("SUDO_ASKPASS", script)
+				cleanup = func() {
+					os.Unsetenv("SUDO_ASKPASS")
+					os.RemoveAll(dir)
+				}
+			}
+		}
+	}
+
 	stop := make(chan struct{})
 	go func() {
 		ticker := time.NewTicker(60 * time.Second)
@@ -62,7 +87,32 @@ func SudoKeepalive(dryRun bool) func() {
 			}
 		}
 	}()
-	return func() { close(stop) }
+	return func() {
+		close(stop)
+		cleanup()
+	}
+}
+
+// returns ("", true) when there's no TTY but plain `sudo -v` worked
+func askPassword() (string, bool) {
+	if !term.IsTerminal(int(os.Stdin.Fd())) {
+		return "", run("sudo", "-v") == nil
+	}
+	for range 3 {
+		fmt.Print("Password: ")
+		raw, err := term.ReadPassword(int(os.Stdin.Fd()))
+		fmt.Println()
+		if err != nil {
+			return "", run("sudo", "-v") == nil
+		}
+		check := exec.Command("sudo", "-S", "-v")
+		check.Stdin = strings.NewReader(string(raw) + "\n")
+		if check.Run() == nil {
+			return string(raw), true
+		}
+		fmt.Println("Sorry, try again.")
+	}
+	return "", false
 }
 
 func run(name string, args ...string) error {
