@@ -339,10 +339,13 @@ func (l *Linux) Install(items []catalog.Item, skip map[string]bool, dryRun bool)
 			l.updated = true
 		}
 		fmt.Printf("\n==> Installing %s\n", it.Name)
-		if err := run(installCmd[0], installCmd[1:]...); err != nil {
-			res.Failed = append(res.Failed, it.Name)
-		} else {
+		switch err := run(installCmd[0], installCmd[1:]...); {
+		case err == nil:
 			res.Installed = append(res.Installed, it.Name)
+		case it.Hint != "":
+			res.Manual = append(res.Manual, fmt.Sprintf("%s (%s)", it.Name, it.Hint))
+		default:
+			res.Failed = append(res.Failed, it.Name)
 		}
 	}
 	return res

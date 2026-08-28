@@ -109,6 +109,13 @@ func runSetup(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	if hasItem(p.items, "tmux") {
+		fmt.Println("\n==> tmux plugin manager (tpm) + plugins")
+		if err := extras.CloneTmuxTpm(dryRun); err != nil {
+			fmt.Printf("  failed: %v\n", err)
+		}
+	}
+
 	for _, s := range p.settings {
 		fmt.Printf("\n==> Setting: %s\n", s.Desc)
 		if err := s.Apply(dryRun); err != nil {

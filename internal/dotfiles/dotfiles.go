@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -39,6 +40,10 @@ func homePath(l Mapping) string {
 
 func repoPath(l Mapping) string {
 	return filepath.Join(RepoDir(), l.Repo)
+}
+
+func macOnly(l Mapping) bool {
+	return strings.HasPrefix(l.Home, "Library/")
 }
 
 func pointsIntoRepo(path string) bool {
@@ -136,6 +141,9 @@ func Link(repoURL string, dryRun bool) error {
 	}
 	backupDir := filepath.Join(os.TempDir(), "dotfiles-backup-"+time.Now().Format("20060102-150405"))
 	for _, l := range Mappings {
+		if macOnly(l) && runtime.GOOS != "darwin" {
+			continue
+		}
 		src := repoPath(l)
 		dst := homePath(l)
 		if _, err := os.Stat(src); os.IsNotExist(err) {

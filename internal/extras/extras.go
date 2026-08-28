@@ -29,13 +29,33 @@ func ohMyZshTargets() []cloneTarget {
 	}
 }
 
+func tmuxTpmTarget() cloneTarget {
+	home, _ := os.UserHomeDir()
+	return cloneTarget{"https://github.com/tmux-plugins/tpm.git", filepath.Join(home, ".tmux/plugins/tpm")}
+}
+
 func RequiredDirs() []string {
-	targets := append([]cloneTarget{fzfGitTarget()}, ohMyZshTargets()...)
+	targets := append([]cloneTarget{fzfGitTarget(), tmuxTpmTarget()}, ohMyZshTargets()...)
 	dirs := make([]string, len(targets))
 	for i, t := range targets {
 		dirs[i] = t.dir
 	}
 	return dirs
+}
+
+func CloneTmuxTpm(dryRun bool) error {
+	t := tmuxTpmTarget()
+	if err := clone(t.url, t.dir, dryRun); err != nil {
+		return err
+	}
+	if dryRun {
+		return nil
+	}
+	installer := filepath.Join(t.dir, "bin/install_plugins")
+	cmd := exec.Command(installer)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
 }
 
 func CloneZshrcFzfGit(dryRun bool) error {
