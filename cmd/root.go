@@ -69,6 +69,8 @@ func runSetup(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+	stopSudo := installer.SudoKeepalive(dryRun)
+	defer stopSudo()
 	if err := inst.Bootstrap(dryRun); err != nil {
 		return fmt.Errorf("homebrew bootstrap failed: %w\nFix that (the account needs to be an Administrator), then re-run noob-cli — everything is safe to re-run", err)
 	}

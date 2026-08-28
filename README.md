@@ -28,6 +28,12 @@ go build -o noob-cli .
 noob-cli installs Homebrew itself if it's missing. Cutting a new release is
 `scripts/release.sh v0.x.y` (cross-compiles, tags, pushes, publishes with gh).
 
+Don't run noob-cli with sudo: Homebrew refuses to run as root, and files written
+to `$HOME` would end up root-owned. noob-cli asks for your password once at the
+start and keeps the sudo session warm for the rest of the run. GUI permission
+dialogs (App Management, Accessibility for AeroSpace/Raycast) come from macOS
+privacy protections and can't be pre-approved from a script.
+
 ## Usage
 
 ```sh

@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/nilay-banerjee/noob-cli/internal/catalog"
 )
@@ -34,6 +35,33 @@ func Detect() (Installer, error) {
 		return &Linux{cmd: "dnf", query: []string{"rpm", "-q"}, pkgName: func(it catalog.Item) string { return it.Dnf }}, nil
 	}
 	return nil, fmt.Errorf("no supported package manager found (need brew, apt-get, or dnf)")
+}
+
+// one password prompt up front, then a background refresh keeps the sudo
+// timestamp warm so nothing else prompts mid-run
+func SudoKeepalive(dryRun bool) func() {
+	if dryRun {
+		return func() {}
+	}
+	fmt.Println("==> Pre-authorizing sudo (one password prompt for the whole run)")
+	if err := run("sudo", "-v"); err != nil {
+		fmt.Println("  couldn't pre-authorize sudo; installs may prompt individually")
+		return func() {}
+	}
+	stop := make(chan struct{})
+	go func() {
+		ticker := time.NewTicker(60 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-stop:
+				return
+			case <-ticker.C:
+				_ = exec.Command("sudo", "-n", "-v").Run()
+			}
+		}
+	}()
+	return func() { close(stop) }
 }
 
 func run(name string, args ...string) error {
