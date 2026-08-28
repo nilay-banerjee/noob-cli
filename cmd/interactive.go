@@ -15,7 +15,7 @@ type plan struct {
 	doDotfiles bool
 }
 
-func interactivePlan(mac bool) (plan, error) {
+func interactivePlan(mac bool, preinstalled map[string]bool) (plan, error) {
 	tier, err := askTier()
 	if err != nil {
 		return plan{}, err
@@ -29,7 +29,7 @@ func interactivePlan(mac bool) (plan, error) {
 	for _, it := range preselected {
 		pre[it.Name] = true
 	}
-	cliOpts, caskOpts := itemOptions(pre)
+	cliOpts, caskOpts := itemOptions(pre, preinstalled)
 
 	var cliNames, caskNames, settingNames []string
 	doDotfiles := !skipDotfiles
@@ -80,9 +80,12 @@ func askTier() (catalog.Tier, error) {
 	return catalog.Daily, nil
 }
 
-func itemOptions(pre map[string]bool) (clis, casks []huh.Option[string]) {
+func itemOptions(pre, preinstalled map[string]bool) (clis, casks []huh.Option[string]) {
 	for _, it := range catalog.Items {
 		label := fmt.Sprintf("%s — %s", it.Name, it.Desc)
+		if preinstalled[it.Name] {
+			label += " (installed)"
+		}
 		opt := huh.NewOption(label, it.Name).Selected(pre[it.Name])
 		if it.Cask {
 			casks = append(casks, opt)

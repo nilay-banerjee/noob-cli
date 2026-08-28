@@ -7,13 +7,19 @@ import (
 	"github.com/nilay-banerjee/noob-cli/internal/installer"
 )
 
-func printPlan(p plan, mac bool) {
+func printPlan(p plan, preinstalled map[string]bool, mac bool) {
 	var clis, casks []string
+	skipped := 0
 	for _, it := range p.items {
+		name := it.Name
+		if preinstalled[it.Name] {
+			name += " ✓"
+			skipped++
+		}
 		if it.Cask {
-			casks = append(casks, it.Name)
+			casks = append(casks, name)
 		} else {
-			clis = append(clis, it.Name)
+			clis = append(clis, name)
 		}
 	}
 	fmt.Printf("Plan:\n  CLIs:  %s\n", strings.Join(clis, ", "))
@@ -28,6 +34,9 @@ func printPlan(p plan, mac bool) {
 		fmt.Printf("  Settings: %s\n", strings.Join(names, ", "))
 	}
 	fmt.Printf("  Dotfiles: %v\n", p.doDotfiles)
+	if skipped > 0 {
+		fmt.Printf("  ✓ = already installed, %d will be skipped\n", skipped)
+	}
 }
 
 func printSummary(res installer.Result) {

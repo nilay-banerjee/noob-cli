@@ -59,22 +59,24 @@ func init() {
 }
 
 func runSetup(cmd *cobra.Command, args []string) error {
-	p, mac, err := buildPlan()
-	if err != nil {
-		return err
-	}
-	printPlan(p, mac)
-
 	inst, err := installer.Detect()
 	if err != nil {
 		return err
 	}
+	preinstalled := inst.Preinstalled(catalog.Items)
+
+	p, mac, err := buildPlan(preinstalled)
+	if err != nil {
+		return err
+	}
+	printPlan(p, preinstalled, mac)
+
 	stopSudo := installer.SudoKeepalive(dryRun)
 	defer stopSudo()
 	if err := inst.Bootstrap(dryRun); err != nil {
 		return fmt.Errorf("homebrew bootstrap failed: %w\nFix that (the account needs to be an Administrator), then re-run noob-cli — everything is safe to re-run", err)
 	}
-	res := inst.Install(p.items, dryRun)
+	res := inst.Install(p.items, preinstalled, dryRun)
 
 	if p.doDotfiles {
 		fmt.Println("\n==> Dotfiles")
@@ -108,14 +110,14 @@ func runSetup(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func buildPlan() (plan, bool, error) {
+func buildPlan(preinstalled map[string]bool) (plan, bool, error) {
 	mac := runtime.GOOS == "darwin"
 	tier, n, err := pickedTier()
 	if err != nil {
 		return plan{}, mac, err
 	}
 	if n == 0 && isTTY() {
-		p, err := interactivePlan(mac)
+		p, err := interactivePlan(mac, preinstalled)
 		return p, mac, err
 	}
 	items, err := catalog.Resolve(tier, include, exclude)

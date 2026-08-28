@@ -21,7 +21,8 @@ type Result struct {
 
 type Installer interface {
 	Bootstrap(dryRun bool) error
-	Install(items []catalog.Item, dryRun bool) Result
+	Preinstalled(items []catalog.Item) map[string]bool
+	Install(items []catalog.Item, skip map[string]bool, dryRun bool) Result
 }
 
 func Detect() (Installer, error) {
@@ -134,20 +135,44 @@ func (b *Brew) installedSet() map[string]bool {
 	return set
 }
 
-func (b *Brew) Install(items []catalog.Item, dryRun bool) Result {
-	var res Result
-	installed := map[string]bool{}
-	if !dryRun {
-		installed = b.installedSet()
+// covers apps installed outside brew (manual downloads), which would make
+// `brew install --cask` fail with "already an App at ..."
+func appExists(app string) bool {
+	if app == "" {
+		return false
 	}
-	for _, it := range items {
-		// tap-qualified and versioned names show up unqualified in `brew list`
-		short := it.Brew
-		if i := strings.LastIndex(short, "/"); i >= 0 {
-			short = short[i+1:]
+	home, _ := os.UserHomeDir()
+	for _, dir := range []string{"/Applications", filepath.Join(home, "Applications")} {
+		if _, err := os.Stat(filepath.Join(dir, app)); err == nil {
+			return true
 		}
-		short = strings.SplitN(short, "@", 2)[0]
-		if installed[it.Brew] || installed[short] {
+	}
+	return false
+}
+
+func shortBrewName(name string) string {
+	// tap-qualified and versioned names show up unqualified in `brew list`
+	if i := strings.LastIndex(name, "/"); i >= 0 {
+		name = name[i+1:]
+	}
+	return strings.SplitN(name, "@", 2)[0]
+}
+
+func (b *Brew) Preinstalled(items []catalog.Item) map[string]bool {
+	set := b.installedSet()
+	out := map[string]bool{}
+	for _, it := range items {
+		if set[it.Brew] || set[shortBrewName(it.Brew)] || appExists(it.App) {
+			out[it.Name] = true
+		}
+	}
+	return out
+}
+
+func (b *Brew) Install(items []catalog.Item, skip map[string]bool, dryRun bool) Result {
+	var res Result
+	for _, it := range items {
+		if skip[it.Name] {
 			res.Skipped = append(res.Skipped, it.Name)
 			continue
 		}
@@ -187,7 +212,17 @@ func (l *Linux) isInstalled(pkg string) bool {
 	return exec.Command(l.query[0], args...).Run() == nil
 }
 
-func (l *Linux) Install(items []catalog.Item, dryRun bool) Result {
+func (l *Linux) Preinstalled(items []catalog.Item) map[string]bool {
+	out := map[string]bool{}
+	for _, it := range items {
+		if pkg := l.pkgName(it); pkg != "" && l.isInstalled(pkg) {
+			out[it.Name] = true
+		}
+	}
+	return out
+}
+
+func (l *Linux) Install(items []catalog.Item, skip map[string]bool, dryRun bool) Result {
 	var res Result
 	for _, it := range items {
 		if it.Cask {
@@ -202,7 +237,7 @@ func (l *Linux) Install(items []catalog.Item, dryRun bool) Result {
 			res.Manual = append(res.Manual, fmt.Sprintf("%s (%s)", it.Name, hint))
 			continue
 		}
-		if !dryRun && l.isInstalled(pkg) {
+		if skip[it.Name] {
 			res.Skipped = append(res.Skipped, it.Name)
 			continue
 		}
