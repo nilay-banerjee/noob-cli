@@ -25,9 +25,12 @@ var (
 	dotfilesRepo string
 )
 
+var version = "dev"
+
 var rootCmd = &cobra.Command{
-	Use:   "noob-cli",
-	Short: "Set up a fresh machine the way Nilay likes it",
+	Use:     "noob-cli",
+	Version: version,
+	Short:   "Set up a fresh machine the way Nilay likes it",
 	Long: `noob-cli installs the apps and CLIs for a fresh macOS (or Linux server) machine,
 links dotfiles from ~/dotfiles, and applies sane macOS defaults.
 

@@ -8,14 +8,25 @@ Targets macOS (full setup) and Linux (CLI tools only, apt or dnf).
 
 ## Install
 
+On a fresh machine (no Go, no brew, just curl):
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/nilay-banerjee/noob-cli/main/install.sh | sh
+```
+
+Downloads the prebuilt binary for your OS/arch from the latest GitHub release into
+`~/.local/bin` (override with `BINDIR=/usr/local/bin`).
+
+Or build from source if you have Go:
+
 ```sh
 git clone https://github.com/nilay-banerjee/noob-cli.git
 cd noob-cli
 go build -o noob-cli .
 ```
 
-On a truly fresh Mac you need Xcode command line tools first (`xcode-select --install`
-gives you git and clang). noob-cli installs Homebrew itself if it's missing.
+noob-cli installs Homebrew itself if it's missing. Cutting a new release is
+`scripts/release.sh v0.x.y` (cross-compiles, tags, pushes, publishes with gh).
 
 ## Usage
 
