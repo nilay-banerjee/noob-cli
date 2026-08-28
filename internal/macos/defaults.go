@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 )
 
 type Setting struct {
@@ -18,6 +19,7 @@ var Settings = []Setting{
 	{Name: "raycast-hotkey", Desc: "Give Cmd-Space to Raycast: disable Spotlight hotkey, set Raycast's, launch it", Apply: raycastHotkey},
 	{Name: "fast-key-repeat", Desc: "Key repeat faster than System Settings allows", Apply: fastKeyRepeat},
 	{Name: "finder-dock", Desc: "Finder/Dock sanity: extensions, hidden files, path bar, snappier Dock", Apply: finderDock},
+	{Name: "dock-apps", Desc: "Pin the usual apps to the Dock (Arc, Spotify, Ghostty, Slack, Obsidian)", Apply: dockApps},
 }
 
 func ByName(name string) (Setting, bool) {
@@ -103,6 +105,41 @@ func fastKeyRepeat(dryRun bool) error {
 		return err
 	}
 	return run(dryRun, "defaults", "write", "-g", "InitialKeyRepeat", "-int", "15")
+}
+
+var dockPins = []string{
+	"/Applications/Arc.app",
+	"/Applications/Spotify.app",
+	"/Applications/Ghostty.app",
+	"/Applications/Slack.app",
+	"/Applications/Obsidian.app",
+	"/System/Applications/Passwords.app",
+}
+
+func dockApps(dryRun bool) error {
+	out, _ := exec.Command("defaults", "read", "com.apple.dock", "persistent-apps").Output()
+	current := string(out)
+	added := false
+	for _, app := range dockPins {
+		if _, err := os.Stat(app); err != nil {
+			continue
+		}
+		if strings.Contains(current, app) {
+			fmt.Printf("  already in Dock: %s\n", filepath.Base(app))
+			continue
+		}
+		tile := fmt.Sprintf(`<dict><key>tile-data</key><dict><key>file-data</key><dict>`+
+			`<key>_CFURLString</key><string>%s</string>`+
+			`<key>_CFURLStringType</key><integer>0</integer></dict></dict></dict>`, app)
+		if err := run(dryRun, "defaults", "write", "com.apple.dock", "persistent-apps", "-array-add", tile); err != nil {
+			return err
+		}
+		added = true
+	}
+	if added {
+		return run(dryRun, "killall", "Dock")
+	}
+	return nil
 }
 
 func finderDock(dryRun bool) error {

@@ -74,3 +74,11 @@ killall Dock
 ```
 
 Revert any of them with `defaults delete <domain> <key>` and the same killall.
+
+## dock-apps
+
+Pins Arc, Spotify, Ghostty, Slack, Obsidian, and Passwords to the Dock by appending
+to `com.apple.dock persistent-apps`, then restarts the Dock. Append-only: existing
+Dock items are never removed or reordered, apps not installed are skipped.
+
+Revert: drag the icons off the Dock.
