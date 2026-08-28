@@ -37,7 +37,6 @@ links dotfiles from ~/dotfiles, and applies sane macOS defaults.
 
 Run without flags for an interactive step-through. Pass a tier flag to skip the prompts.`,
 	SilenceUsage: true,
-	RunE:         runSetup,
 }
 
 func Execute() {
@@ -47,6 +46,7 @@ func Execute() {
 }
 
 func init() {
+	rootCmd.RunE = runSetup
 	rootCmd.Flags().BoolVar(&serverFlag, "server", false, "lightweight CLI-only tier, works on Linux too")
 	rootCmd.Flags().BoolVar(&dailyFlag, "daily", false, "everything used daily (default)")
 	rootCmd.Flags().BoolVar(&ultimateFlag, "ultimate", false, "daily plus the nice-to-haves")
@@ -101,6 +101,10 @@ func runSetup(cmd *cobra.Command, args []string) error {
 	if hasItem(p.items, "zsh") {
 		fmt.Println("\n==> oh-my-zsh + plugins + powerlevel10k")
 		if err := extras.CloneZshrcOhMyZsh(dryRun); err != nil {
+			fmt.Printf("  failed: %v\n", err)
+		}
+		fmt.Println("\n==> zsh completion for noob-cli")
+		if err := installCompletions(dryRun); err != nil {
 			fmt.Printf("  failed: %v\n", err)
 		}
 	}
