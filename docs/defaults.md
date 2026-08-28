@@ -82,3 +82,20 @@ to `com.apple.dock persistent-apps`, then restarts the Dock. Append-only: existi
 Dock items are never removed or reordered, apps not installed are skipped.
 
 Revert: drag the icons off the Dock.
+
+## default-browser
+
+Sets Arc as the default browser (Chrome when Arc isn't installed) using the
+`defaultbrowser` brew formula, which it installs on demand. Arc's LaunchServices
+handler name is `browser` (its bundle id is `company.thebrowser.Browser`).
+
+```sh
+brew install defaultbrowser
+defaultbrowser browser   # or: defaultbrowser chrome
+```
+
+macOS always shows one confirmation dialog for default-browser changes; nothing
+can suppress it, so click "Use" when it appears.
+
+Revert: System Settings → Desktop & Dock → Default web browser, or
+`defaultbrowser safari`.

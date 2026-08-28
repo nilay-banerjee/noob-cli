@@ -20,6 +20,7 @@ var Settings = []Setting{
 	{Name: "fast-key-repeat", Desc: "Key repeat faster than System Settings allows", Apply: fastKeyRepeat},
 	{Name: "finder-dock", Desc: "Finder/Dock sanity: extensions, hidden files, path bar, snappier Dock", Apply: finderDock},
 	{Name: "dock-apps", Desc: "Pin the usual apps to the Dock (Arc, Spotify, Ghostty, Discord, Obsidian, Slack)", Apply: dockApps},
+	{Name: "default-browser", Desc: "Make Arc the default browser (Chrome if Arc is missing; macOS confirms once)", Apply: defaultBrowser},
 }
 
 func ByName(name string) (Setting, bool) {
@@ -106,6 +107,30 @@ func fastKeyRepeat(dryRun bool) error {
 		return err
 	}
 	return run(dryRun, "defaults", "write", "-g", "InitialKeyRepeat", "-int", "15")
+}
+
+const (
+	arcBrowserHandler    = "browser"
+	chromeBrowserHandler = "chrome"
+)
+
+func defaultBrowser(dryRun bool) error {
+	handler := arcBrowserHandler
+	if _, err := os.Stat("/Applications/Arc.app"); err != nil {
+		handler = chromeBrowserHandler
+	}
+	if _, err := exec.LookPath("defaultbrowser"); err != nil {
+		if err := run(dryRun, "brew", "install", "defaultbrowser"); err != nil {
+			return err
+		}
+	}
+	if err := run(dryRun, "defaultbrowser", handler); err != nil {
+		return err
+	}
+	if !dryRun {
+		fmt.Println("  approve the macOS dialog to finish switching the default browser")
+	}
+	return nil
 }
 
 var dockPins = []string{
