@@ -81,12 +81,7 @@ func checkFont() checkResult {
 
 func checkSettings() []checkResult {
 	var out []checkResult
-
-	if _, err := os.Stat(macos.CapsAgentPlist()); err != nil {
-		out = append(out, checkResult{"caps-to-ctrl agent", false, "LaunchAgent missing — remap won't survive reboot"})
-	} else {
-		out = append(out, checkResult{"caps-to-ctrl agent", true, ""})
-	}
+	out = append(out, checkCapsRemap())
 
 	repeat, _ := exec.Command("defaults", "read", "-g", "KeyRepeat").Output()
 	if strings.TrimSpace(string(repeat)) != "2" {
@@ -104,6 +99,31 @@ func checkSettings() []checkResult {
 		}
 	}
 	return out
+}
+
+const (
+	capsLockKeyUsage  = "30064771129"
+	leftCtrlKeyUsage  = "30064771296"
+	rightCtrlKeyUsage = "30064771300"
+)
+
+func checkCapsRemap() checkResult {
+	if _, err := os.Stat(macos.CapsAgentPlist()); err == nil {
+		return checkResult{"caps-to-ctrl", true, "via noob-cli LaunchAgent"}
+	}
+	if capsRemappedInSystemSettings() {
+		return checkResult{"caps-to-ctrl", true, "via System Settings modifier keys"}
+	}
+	return checkResult{"caps-to-ctrl", false, "not remapped — run noob-cli or set it in System Settings > Keyboard"}
+}
+
+func capsRemappedInSystemSettings() bool {
+	out, _ := exec.Command("defaults", "-currentHost", "read", "-g").Output()
+	mappings := string(out)
+	if !strings.Contains(mappings, "modifiermapping") || !strings.Contains(mappings, capsLockKeyUsage) {
+		return false
+	}
+	return strings.Contains(mappings, leftCtrlKeyUsage) || strings.Contains(mappings, rightCtrlKeyUsage)
 }
 
 func checkDotfileLinks() checkResult {
