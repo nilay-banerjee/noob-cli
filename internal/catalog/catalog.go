@@ -69,6 +69,7 @@ var Items = []Item{
 	{Name: "mise", Desc: "runtime version manager", Tier: Server, Brew: "mise", Hint: "on Linux: curl https://mise.run | sh"},
 	{Name: "tree", Desc: "directory trees", Tier: Server, Brew: "tree", Apt: "tree", Dnf: "tree"},
 	{Name: "make", Desc: "build tool", Tier: Server, Brew: "make", Apt: "make", Dnf: "make"},
+	{Name: "mole", Desc: "Mac cleanup tool", Tier: Server, Brew: "mole", Hint: "macOS-only (mole.fit)"},
 
 	{Name: "yarn", Desc: "JS package manager", Tier: Ultimate, Brew: "yarn", Hint: "on Linux: corepack enable"},
 	{Name: "watchman", Desc: "file watcher", Tier: Ultimate, Brew: "watchman"},

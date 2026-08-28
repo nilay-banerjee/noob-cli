@@ -27,6 +27,7 @@ installer lists it under "needs manual install" with a hint instead of failing.
 | mise | runtime versions | mise | — (`curl https://mise.run \| sh`) | — (same) |
 | tree | directory trees | tree | tree | tree |
 | make | build tool | make | make | make |
+| mole | Mac cleanup tool (mole.fit) | mole | — (macOS-only) | — (macOS-only) |
 
 ## daily tier (adds to server)
 
