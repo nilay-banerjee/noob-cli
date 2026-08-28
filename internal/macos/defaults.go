@@ -15,7 +15,7 @@ type Setting struct {
 
 var Settings = []Setting{
 	{Name: "caps-to-ctrl", Desc: "Remap Caps Lock to Ctrl (survives reboot via LaunchAgent)", Apply: capsToCtrl},
-	{Name: "raycast-hotkey", Desc: "Free up Cmd-Space for Raycast by disabling the Spotlight hotkey", Apply: raycastHotkey},
+	{Name: "raycast-hotkey", Desc: "Give Cmd-Space to Raycast: disable Spotlight hotkey, set Raycast's, launch it", Apply: raycastHotkey},
 	{Name: "fast-key-repeat", Desc: "Key repeat faster than System Settings allows", Apply: fastKeyRepeat},
 	{Name: "finder-dock", Desc: "Finder/Dock sanity: extensions, hidden files, path bar, snappier Dock", Apply: finderDock},
 }
@@ -82,11 +82,18 @@ func raycastHotkey(dryRun bool) error {
 		"-dict-add", "64", "<dict><key>enabled</key><false/></dict>"); err != nil {
 		return err
 	}
+	// Command-49 is Cmd-Space; must be written before Raycast launches to be picked up
+	if err := run(dryRun, "defaults", "write", "com.raycast.macos", "raycastGlobalHotkey", "-string", "Command-49"); err != nil {
+		return err
+	}
 	if err := run(dryRun, "killall", "cfprefsd"); err != nil {
 		return err
 	}
+	if err := run(dryRun, "open", "-ga", "Raycast"); err != nil {
+		return err
+	}
 	if !dryRun {
-		fmt.Println("  Spotlight hotkey disabled; takes effect after logout. Set Raycast's hotkey to Cmd-Space in its settings.")
+		fmt.Println("  Raycast launched with Cmd-Space configured; Spotlight frees the key after logout/login.")
 	}
 	return nil
 }

@@ -26,16 +26,18 @@ rm ~/Library/LaunchAgents/com.noob-cli.caps-to-ctrl.plist
 
 ## raycast-hotkey
 
-Disables Spotlight's Cmd-Space hotkey (symbolic hotkey 64) so Raycast can claim it.
+Disables Spotlight's Cmd-Space hotkey (symbolic hotkey 64), sets Raycast's own
+hotkey to Cmd-Space via its preferences, and launches Raycast once so it registers.
 Only applied when Raycast is in the selection.
 
 ```sh
 defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 64 "<dict><key>enabled</key><false/></dict>"
+defaults write com.raycast.macos raycastGlobalHotkey -string "Command-49"
 killall cfprefsd
+open -ga Raycast
 ```
 
-Takes effect after logout/login. You still set Raycast's hotkey to Cmd-Space once,
-in Raycast settings.
+Spotlight fully releases the key after logout/login.
 
 Revert: System Settings > Keyboard > Keyboard Shortcuts > Spotlight, re-enable
 "Show Spotlight search". (Safer than writing the dict back by hand.)
