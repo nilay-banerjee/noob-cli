@@ -89,11 +89,16 @@ noob-cli dotfiles link   # on a fresh machine: symlink ~/dotfiles configs into p
 ## Maintenance
 
 ```sh
-noob-cli doctor    # verify the machine: links, clones, font, settings, zsh/nvim load, dotfiles sync
-noob-cli upgrade   # replace this binary with the latest GitHub release
+noob-cli doctor      # verify the machine: links, clones, font, settings, zsh/nvim load, dotfiles sync
+noob-cli doctor -a   # same, then auto-fix what's fixable and re-check
+noob-cli upgrade     # replace this binary with the latest GitHub release
 ```
 
 `doctor` exits non-zero when something is off and says how to fix each item.
+With `-a` it applies safe fixes itself: relink dotfiles, fast-forward pull,
+re-clone missing zsh/tmux dependencies, reinstall the font, reapply settings.
+Judgment calls (uncommitted changes, unpushed commits, a broken zshrc) are
+reported but never auto-fixed.
 
 Details and the full symlink map: [docs/dotfiles.md](docs/dotfiles.md).
 
