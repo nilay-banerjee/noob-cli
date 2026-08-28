@@ -24,6 +24,7 @@ var Mappings = []Mapping{
 	{Repo: "config/ghostty", Home: ".config/ghostty"},
 	{Repo: "ghostty/config", Home: "Library/Application Support/com.mitchellh.ghostty/config"},
 	{Repo: "config/lazygit", Home: ".config/lazygit"},
+	{Repo: "config/lazygit/config.yml", Home: "Library/Application Support/lazygit/config.yml"},
 }
 
 func RepoDir() string {

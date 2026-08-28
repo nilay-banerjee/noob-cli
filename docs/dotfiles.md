@@ -17,6 +17,7 @@ shows what changed.
 | `~/.config/ghostty` | `~/dotfiles/config/ghostty` |
 | `~/Library/Application Support/com.mitchellh.ghostty/config` | `~/dotfiles/ghostty/config` (macOS) |
 | `~/.config/lazygit` | `~/dotfiles/config/lazygit` |
+| `~/Library/Application Support/lazygit/config.yml` | `~/dotfiles/config/lazygit/config.yml` (macOS reads this path) |
 
 Paths that don't exist on a machine are skipped. Adding a config means adding one
 entry to `Links` in `internal/dotfiles/dotfiles.go`.
