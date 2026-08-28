@@ -70,6 +70,7 @@ var Items = []Item{
 	{Name: "tree", Desc: "directory trees", Tier: Server, Brew: "tree", Apt: "tree", Dnf: "tree"},
 	{Name: "make", Desc: "build tool", Tier: Server, Brew: "make", Apt: "make", Dnf: "make"},
 	{Name: "mole", Desc: "Mac cleanup tool", Tier: Server, Brew: "mole", Hint: "macOS-only (mole.fit)"},
+	{Name: "lumen", Desc: "AI git assistant", Tier: Server, Brew: "jnsahaj/lumen/lumen", Hint: "no apt/dnf package; see github.com/jnsahaj/lumen"},
 
 	{Name: "yarn", Desc: "JS package manager", Tier: Ultimate, Brew: "yarn", Hint: "on Linux: corepack enable"},
 	{Name: "watchman", Desc: "file watcher", Tier: Ultimate, Brew: "watchman"},

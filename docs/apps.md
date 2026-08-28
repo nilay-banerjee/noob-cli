@@ -28,6 +28,7 @@ installer lists it under "needs manual install" with a hint instead of failing.
 | tree | directory trees | tree | tree | tree |
 | make | build tool | make | make | make |
 | mole | Mac cleanup tool (mole.fit) | mole | — (macOS-only) | — (macOS-only) |
+| lumen | AI git assistant | jnsahaj/lumen/lumen | — (see repo) | — (see repo) |
 
 ## daily tier (adds to server)
 
