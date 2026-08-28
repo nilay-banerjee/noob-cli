@@ -112,6 +112,12 @@ func settingOptions() []huh.Option[string] {
 }
 
 func multiSelectGroup(title string, opts []huh.Option[string], installed []string, value *[]string) *huh.Group {
+	if len(opts) == 0 {
+		return huh.NewGroup(huh.NewNote().
+			Title(title).
+			Description(fmt.Sprintf("Everything here is already installed, nothing to pick: %s",
+				strings.Join(installed, ", "))))
+	}
 	fields := []huh.Field{}
 	if len(installed) > 0 {
 		fields = append(fields, huh.NewNote().

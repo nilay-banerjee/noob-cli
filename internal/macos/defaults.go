@@ -5,6 +5,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -15,7 +17,7 @@ type Setting struct {
 }
 
 var Settings = []Setting{
-	{Name: "caps-to-ctrl", Desc: "Remap Caps Lock to Ctrl (survives reboot via LaunchAgent)", Apply: capsToCtrl},
+	{Name: "caps-to-ctrl", Desc: "Remap Caps Lock to Ctrl (native modifier mapping, instant via hidutil)", Apply: capsToCtrl},
 	{Name: "raycast-hotkey", Desc: "Give Cmd-Space to Raycast: disable Spotlight hotkey, set Raycast's, launch it", Apply: raycastHotkey},
 	{Name: "fast-key-repeat", Desc: "Key repeat faster than System Settings allows", Apply: fastKeyRepeat},
 	{Name: "finder-dock", Desc: "Finder/Dock sanity: extensions, hidden files, path bar, snappier Dock", Apply: finderDock},
@@ -45,26 +47,12 @@ func run(dryRun bool, name string, args ...string) error {
 
 const cmdSpaceHotkey = "Command-49"
 
-const capsMapping = `{"UserKeyMapping":[{"HIDKeyboardModifierMappingSrc":0x700000039,"HIDKeyboardModifierMappingDst":0x7000000E0}]}`
+const capsMapping = `{"UserKeyMapping":[{"HIDKeyboardModifierMappingSrc":0x700000039,"HIDKeyboardModifierMappingDst":0x7000000E4}]}`
 
-const capsAgentPlist = `<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-	<key>Label</key>
-	<string>com.noob-cli.caps-to-ctrl</string>
-	<key>ProgramArguments</key>
-	<array>
-		<string>/usr/bin/hidutil</string>
-		<string>property</string>
-		<string>--set</string>
-		<string>` + capsMapping + `</string>
-	</array>
-	<key>RunAtLoad</key>
-	<true/>
-</dict>
-</plist>
-`
+const modifierMappingEntry = `<dict>` +
+	`<key>HIDKeyboardModifierMappingSrc</key><integer>30064771129</integer>` +
+	`<key>HIDKeyboardModifierMappingDst</key><integer>30064771300</integer>` +
+	`</dict>`
 
 func CapsAgentPlist() string {
 	home, _ := os.UserHomeDir()
@@ -75,15 +63,39 @@ func capsToCtrl(dryRun bool) error {
 	if err := run(dryRun, "hidutil", "property", "--set", capsMapping); err != nil {
 		return err
 	}
-	plist := CapsAgentPlist()
-	if dryRun {
-		fmt.Printf("[dry-run] write LaunchAgent %s\n", plist)
-		return nil
+	for _, id := range keyboardMappingIDs() {
+		if err := run(dryRun, "defaults", "-currentHost", "write", "-g",
+			"com.apple.keyboard.modifiermapping."+id, "-array", modifierMappingEntry); err != nil {
+			return err
+		}
 	}
-	if err := os.MkdirAll(filepath.Dir(plist), 0o755); err != nil {
-		return err
+	if !dryRun {
+		os.Remove(CapsAgentPlist())
 	}
-	return os.WriteFile(plist, []byte(capsAgentPlist), 0o644)
+	return nil
+}
+
+func keyboardMappingIDs() []string {
+	ids := map[string]bool{"0-0-0": true}
+	out, _ := exec.Command("hidutil", "list", "--matching", `{"DeviceUsagePage":1,"DeviceUsage":6}`).Output()
+	for _, line := range strings.Split(string(out), "\n") {
+		fields := strings.Fields(line)
+		if len(fields) < 2 || !strings.HasPrefix(fields[0], "0x") {
+			continue
+		}
+		vendor, vendorErr := strconv.ParseInt(fields[0][2:], 16, 64)
+		product, productErr := strconv.ParseInt(fields[1][2:], 16, 64)
+		if vendorErr != nil || productErr != nil {
+			continue
+		}
+		ids[fmt.Sprintf("%d-%d-0", vendor, product)] = true
+	}
+	sorted := make([]string, 0, len(ids))
+	for id := range ids {
+		sorted = append(sorted, id)
+	}
+	sort.Strings(sorted)
+	return sorted
 }
 
 func raycastHotkey(dryRun bool) error {

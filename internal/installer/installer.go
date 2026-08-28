@@ -221,11 +221,19 @@ func brewListName(name string) string {
 	return strings.SplitN(name, "@", 2)[0]
 }
 
+func binaryOnPath(name string) bool {
+	if name == "" {
+		return false
+	}
+	_, err := exec.LookPath(name)
+	return err == nil
+}
+
 func (b *Brew) Preinstalled(items []catalog.Item) map[string]bool {
 	set := b.installedSet()
 	out := map[string]bool{}
 	for _, it := range items {
-		if set[it.Brew] || set[brewListName(it.Brew)] || appBundleInstalled(it.AppBundle) {
+		if set[it.Brew] || set[brewListName(it.Brew)] || appBundleInstalled(it.AppBundle) || binaryOnPath(it.Binary()) {
 			out[it.Name] = true
 		}
 	}
@@ -278,6 +286,10 @@ func (l *Linux) isInstalled(pkg string) bool {
 func (l *Linux) Preinstalled(items []catalog.Item) map[string]bool {
 	out := map[string]bool{}
 	for _, it := range items {
+		if binaryOnPath(it.Binary()) {
+			out[it.Name] = true
+			continue
+		}
 		if pkg := l.pkgName(it); pkg != "" && l.isInstalled(pkg) {
 			out[it.Name] = true
 		}

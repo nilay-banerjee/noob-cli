@@ -36,6 +36,17 @@ type Item struct {
 	Dnf       string
 	Hint      string
 	AppBundle string
+	Bin       string
+}
+
+func (it Item) Binary() string {
+	if it.Bin != "" {
+		return it.Bin
+	}
+	if it.Cask {
+		return ""
+	}
+	return it.Name
 }
 
 var Items = []Item{
@@ -43,18 +54,18 @@ var Items = []Item{
 	{Name: "zsh", Desc: "shell", Tier: Server, Brew: "zsh", Apt: "zsh", Dnf: "zsh"},
 	{Name: "zsh-autosuggestions", Desc: "fish-style suggestions for zsh", Tier: Server, Brew: "zsh-autosuggestions", Apt: "zsh-autosuggestions", Dnf: "zsh-autosuggestions"},
 	{Name: "zsh-syntax-highlighting", Desc: "command highlighting for zsh", Tier: Server, Brew: "zsh-syntax-highlighting", Apt: "zsh-syntax-highlighting", Dnf: "zsh-syntax-highlighting"},
-	{Name: "neovim", Desc: "editor", Tier: Server, Brew: "neovim", Apt: "neovim", Dnf: "neovim"},
+	{Name: "neovim", Desc: "editor", Tier: Server, Brew: "neovim", Apt: "neovim", Dnf: "neovim", Bin: "nvim"},
 	{Name: "tmux", Desc: "terminal multiplexer", Tier: Server, Brew: "tmux", Apt: "tmux", Dnf: "tmux"},
 	{Name: "fzf", Desc: "fuzzy finder", Tier: Server, Brew: "fzf", Apt: "fzf", Dnf: "fzf"},
 	{Name: "fd", Desc: "fast find, used by the fzf config", Tier: Server, Brew: "fd", Apt: "fd-find", Dnf: "fd-find", Hint: "apt names the binary fdfind"},
-	{Name: "ripgrep", Desc: "fast grep", Tier: Server, Brew: "ripgrep", Apt: "ripgrep", Dnf: "ripgrep"},
+	{Name: "ripgrep", Desc: "fast grep", Tier: Server, Brew: "ripgrep", Apt: "ripgrep", Dnf: "ripgrep", Bin: "rg"},
 	{Name: "bat", Desc: "cat with syntax highlighting", Tier: Server, Brew: "bat", Apt: "bat", Dnf: "bat", Hint: "installed as `batcat` on Debian/Ubuntu"},
 	{Name: "eza", Desc: "modern ls", Tier: Server, Brew: "eza", Apt: "eza", Dnf: "eza", Hint: "needs Ubuntu 24.04+ / Debian 13+, otherwise see eza.rocks"},
 	{Name: "zoxide", Desc: "smarter cd", Tier: Server, Brew: "zoxide", Apt: "zoxide", Dnf: "zoxide"},
 	{Name: "fastfetch", Desc: "system info", Tier: Server, Brew: "fastfetch", Apt: "fastfetch", Dnf: "fastfetch", Hint: "needs Ubuntu 24.10+, otherwise ppa:zhangsongcui3371/fastfetch"},
 	{Name: "lazygit", Desc: "git TUI", Tier: Server, Brew: "lazygit", Dnf: "lazygit", Hint: "no apt package; grab a release from github.com/jesseduffield/lazygit"},
 	{Name: "gh", Desc: "GitHub CLI", Tier: Server, Brew: "gh", Apt: "gh", Dnf: "gh"},
-	{Name: "git-delta", Desc: "better git diffs", Tier: Server, Brew: "git-delta", Apt: "git-delta", Dnf: "git-delta"},
+	{Name: "git-delta", Desc: "better git diffs", Tier: Server, Brew: "git-delta", Apt: "git-delta", Dnf: "git-delta", Bin: "delta"},
 	{Name: "mise", Desc: "runtime version manager", Tier: Server, Brew: "mise", Hint: "on Linux: curl https://mise.run | sh"},
 	{Name: "tree", Desc: "directory trees", Tier: Server, Brew: "tree", Apt: "tree", Dnf: "tree"},
 	{Name: "make", Desc: "build tool", Tier: Server, Brew: "make", Apt: "make", Dnf: "make"},
@@ -75,7 +86,7 @@ var Items = []Item{
 	{Name: "visual-studio-code", Desc: "VS Code", Cask: true, Tier: Daily, Brew: "visual-studio-code", AppBundle: "Visual Studio Code.app"},
 	{Name: "aerospace", Desc: "tiling window manager", Cask: true, Tier: Daily, Brew: "nikitabobko/tap/aerospace", AppBundle: "AeroSpace.app"},
 	{Name: "claude", Desc: "Claude desktop", Cask: true, Tier: Daily, Brew: "claude", AppBundle: "Claude.app"},
-	{Name: "claude-code", Desc: "Claude Code CLI", Cask: true, Tier: Daily, Brew: "claude-code@latest"},
+	{Name: "claude-code", Desc: "Claude Code CLI", Cask: true, Tier: Daily, Brew: "claude-code@latest", Bin: "claude"},
 	{Name: "docker", Desc: "Docker Desktop", Cask: true, Tier: Daily, Brew: "docker-desktop", AppBundle: "Docker.app"},
 
 	{Name: "ffmpeg", Desc: "media swiss army knife", Tier: Ultimate, Brew: "ffmpeg", Apt: "ffmpeg", Dnf: "ffmpeg"},

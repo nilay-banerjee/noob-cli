@@ -6,23 +6,24 @@ interactive flow each one is a checkbox.
 
 ## caps-to-ctrl
 
-Remaps Caps Lock to Ctrl at the HID level (works in every app, no System Settings
-fiddling per keyboard).
+Writes the same native modifier mapping System Settings > Keyboard > Modifier Keys
+does, per keyboard plus a `0-0-0` catch-all, so it survives reboots with no helper
+process and shows up in the Settings UI. A one-shot `hidutil` call makes it take
+effect immediately in the current session.
 
 ```sh
-hidutil property --set '{"UserKeyMapping":[{"HIDKeyboardModifierMappingSrc":0x700000039,"HIDKeyboardModifierMappingDst":0x7000000E0}]}'
+defaults -currentHost write -g com.apple.keyboard.modifiermapping.<vendor>-<product>-0 -array \
+  '<dict><key>HIDKeyboardModifierMappingSrc</key><integer>30064771129</integer><key>HIDKeyboardModifierMappingDst</key><integer>30064771300</integer></dict>'
+hidutil property --set '{"UserKeyMapping":[{"HIDKeyboardModifierMappingSrc":0x700000039,"HIDKeyboardModifierMappingDst":0x7000000E4}]}'
 ```
 
-hidutil mappings reset on reboot, so it also writes a LaunchAgent at
-`~/Library/LaunchAgents/com.noob-cli.caps-to-ctrl.plist` that reapplies the mapping
-at login.
+Keyboards are found with `hidutil list`. Older noob-cli versions used a LaunchAgent
+instead; the setting removes that agent when it finds one, and `doctor` accepts
+either mechanism.
 
-Revert:
-
-```sh
-hidutil property --set '{"UserKeyMapping":[]}'
-rm ~/Library/LaunchAgents/com.noob-cli.caps-to-ctrl.plist
-```
+Revert: System Settings > Keyboard > Keyboard Shortcuts > Modifier Keys, set
+Caps Lock back to Caps Lock (or `defaults -currentHost delete -g com.apple.keyboard.modifiermapping.<id>`),
+then `hidutil property --set '{"UserKeyMapping":[]}'`.
 
 ## raycast-hotkey
 
