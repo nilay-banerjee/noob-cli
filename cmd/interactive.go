@@ -52,13 +52,7 @@ func interactivePlan(mac bool, preinstalled map[string]bool) (plan, error) {
 		return plan{}, err
 	}
 	items := itemsByName(append(cliNames, caskNames...))
-	// installed items aren't offered in the checklists; carry the tier's ones
-	// back into the plan so they show up as skipped
-	for _, it := range catalog.Items {
-		if pre[it.Name] && preinstalled[it.Name] {
-			items = append(items, it)
-		}
-	}
+	items = append(items, tierItemsAlreadyInstalled(pre, preinstalled)...)
 	return plan{
 		items:      items,
 		settings:   settingsByName(settingNames),
@@ -129,6 +123,16 @@ func multiSelectGroup(title string, opts []huh.Option[string], installed []strin
 		Height(14).
 		Value(value))
 	return huh.NewGroup(fields...)
+}
+
+func tierItemsAlreadyInstalled(pre, preinstalled map[string]bool) []catalog.Item {
+	var items []catalog.Item
+	for _, it := range catalog.Items {
+		if pre[it.Name] && preinstalled[it.Name] {
+			items = append(items, it)
+		}
+	}
+	return items
 }
 
 func itemsByName(names []string) []catalog.Item {

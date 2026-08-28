@@ -9,12 +9,12 @@ import (
 	"time"
 )
 
-type Link struct {
+type Mapping struct {
 	Repo string
 	Home string
 }
 
-var Links = []Link{
+var Mappings = []Mapping{
 	{Repo: "zsh/.zshrc", Home: ".zshrc"},
 	{Repo: "zsh/.p10k.zsh", Home: ".p10k.zsh"},
 	{Repo: "tmux/.tmux.conf", Home: ".tmux.conf"},
@@ -31,12 +31,12 @@ func RepoDir() string {
 	return filepath.Join(home, "dotfiles")
 }
 
-func homePath(l Link) string {
+func homePath(l Mapping) string {
 	home, _ := os.UserHomeDir()
 	return filepath.Join(home, l.Home)
 }
 
-func repoPath(l Link) string {
+func repoPath(l Mapping) string {
 	return filepath.Join(RepoDir(), l.Repo)
 }
 
@@ -60,9 +60,8 @@ func git(args ...string) error {
 	return cmd.Run()
 }
 
-// Init harvests the machine's live configs into ~/dotfiles and symlinks them back.
-func Init(dryRun bool) error {
-	for _, l := range Links {
+func Harvest(dryRun bool) error {
+	for _, l := range Mappings {
 		src := homePath(l)
 		dst := repoPath(l)
 		info, err := os.Lstat(src)
@@ -118,8 +117,7 @@ func Init(dryRun bool) error {
 
 const DefaultRepo = "https://github.com/nilay-banerjee/dotfiles.git"
 
-// Setup makes ~/dotfiles configs live on this machine: clone if needed, then symlink.
-func Setup(repoURL string, dryRun bool) error {
+func Link(repoURL string, dryRun bool) error {
 	if repoURL == "" {
 		repoURL = DefaultRepo
 	}
@@ -136,7 +134,7 @@ func Setup(repoURL string, dryRun bool) error {
 		}
 	}
 	backupDir := filepath.Join(os.TempDir(), "dotfiles-backup-"+time.Now().Format("20060102-150405"))
-	for _, l := range Links {
+	for _, l := range Mappings {
 		src := repoPath(l)
 		dst := homePath(l)
 		if _, err := os.Stat(src); os.IsNotExist(err) {

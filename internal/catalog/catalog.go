@@ -27,19 +27,18 @@ func (t Tier) String() string {
 }
 
 type Item struct {
-	Name string
-	Desc string
-	Cask bool
-	Tier Tier
-	Brew string
-	Apt  string
-	Dnf  string
-	Hint string
-	App  string // .app bundle name, to detect installs brew doesn't know about
+	Name      string
+	Desc      string
+	Cask      bool
+	Tier      Tier
+	Brew      string
+	Apt       string
+	Dnf       string
+	Hint      string
+	AppBundle string
 }
 
 var Items = []Item{
-	// server: CLIs that belong on every machine, including Linux boxes
 	{Name: "git", Desc: "version control", Tier: Server, Brew: "git", Apt: "git", Dnf: "git"},
 	{Name: "zsh", Desc: "shell", Tier: Server, Brew: "zsh", Apt: "zsh", Dnf: "zsh"},
 	{Name: "zsh-autosuggestions", Desc: "fish-style suggestions for zsh", Tier: Server, Brew: "zsh-autosuggestions", Apt: "zsh-autosuggestions", Dnf: "zsh-autosuggestions"},
@@ -60,38 +59,36 @@ var Items = []Item{
 	{Name: "tree", Desc: "directory trees", Tier: Server, Brew: "tree", Apt: "tree", Dnf: "tree"},
 	{Name: "make", Desc: "build tool", Tier: Server, Brew: "make", Apt: "make", Dnf: "make"},
 
-	// daily: the default mac setup
 	{Name: "yarn", Desc: "JS package manager", Tier: Daily, Brew: "yarn", Hint: "on Linux: corepack enable"},
 	{Name: "watchman", Desc: "file watcher", Tier: Daily, Brew: "watchman"},
-	{Name: "arc", Desc: "Arc browser", Cask: true, Tier: Daily, Brew: "arc", App: "Arc.app"},
-	{Name: "google-chrome", Desc: "Chrome", Cask: true, Tier: Daily, Brew: "google-chrome", App: "Google Chrome.app"},
-	{Name: "ghostty", Desc: "terminal", Cask: true, Tier: Daily, Brew: "ghostty", App: "Ghostty.app"},
+	{Name: "arc", Desc: "Arc browser", Cask: true, Tier: Daily, Brew: "arc", AppBundle: "Arc.app"},
+	{Name: "google-chrome", Desc: "Chrome", Cask: true, Tier: Daily, Brew: "google-chrome", AppBundle: "Google Chrome.app"},
+	{Name: "ghostty", Desc: "terminal", Cask: true, Tier: Daily, Brew: "ghostty", AppBundle: "Ghostty.app"},
 	{Name: "meslo-nerd-font", Desc: "font for the p10k prompt and Ghostty", Cask: true, Tier: Daily, Brew: "font-meslo-lg-nerd-font"},
-	{Name: "raycast", Desc: "launcher", Cask: true, Tier: Daily, Brew: "raycast", App: "Raycast.app"},
-	{Name: "spotify", Desc: "music", Cask: true, Tier: Daily, Brew: "spotify", App: "Spotify.app"},
-	{Name: "whatsapp", Desc: "WhatsApp", Cask: true, Tier: Daily, Brew: "whatsapp", App: "WhatsApp.app"},
-	{Name: "free-download-manager", Desc: "FDM", Cask: true, Tier: Daily, Brew: "free-download-manager", App: "Free Download Manager.app"},
-	{Name: "obsidian", Desc: "notes", Cask: true, Tier: Daily, Brew: "obsidian", App: "Obsidian.app"},
-	{Name: "1password", Desc: "password manager", Cask: true, Tier: Daily, Brew: "1password", App: "1Password.app"},
-	{Name: "slack", Desc: "work chat", Cask: true, Tier: Daily, Brew: "slack", App: "Slack.app"},
-	{Name: "visual-studio-code", Desc: "VS Code", Cask: true, Tier: Daily, Brew: "visual-studio-code", App: "Visual Studio Code.app"},
-	{Name: "aerospace", Desc: "tiling window manager", Cask: true, Tier: Daily, Brew: "nikitabobko/tap/aerospace", App: "AeroSpace.app"},
-	{Name: "claude", Desc: "Claude desktop", Cask: true, Tier: Daily, Brew: "claude", App: "Claude.app"},
+	{Name: "raycast", Desc: "launcher", Cask: true, Tier: Daily, Brew: "raycast", AppBundle: "Raycast.app"},
+	{Name: "spotify", Desc: "music", Cask: true, Tier: Daily, Brew: "spotify", AppBundle: "Spotify.app"},
+	{Name: "whatsapp", Desc: "WhatsApp", Cask: true, Tier: Daily, Brew: "whatsapp", AppBundle: "WhatsApp.app"},
+	{Name: "free-download-manager", Desc: "FDM", Cask: true, Tier: Daily, Brew: "free-download-manager", AppBundle: "Free Download Manager.app"},
+	{Name: "obsidian", Desc: "notes", Cask: true, Tier: Daily, Brew: "obsidian", AppBundle: "Obsidian.app"},
+	{Name: "1password", Desc: "password manager", Cask: true, Tier: Daily, Brew: "1password", AppBundle: "1Password.app"},
+	{Name: "slack", Desc: "work chat", Cask: true, Tier: Daily, Brew: "slack", AppBundle: "Slack.app"},
+	{Name: "visual-studio-code", Desc: "VS Code", Cask: true, Tier: Daily, Brew: "visual-studio-code", AppBundle: "Visual Studio Code.app"},
+	{Name: "aerospace", Desc: "tiling window manager", Cask: true, Tier: Daily, Brew: "nikitabobko/tap/aerospace", AppBundle: "AeroSpace.app"},
+	{Name: "claude", Desc: "Claude desktop", Cask: true, Tier: Daily, Brew: "claude", AppBundle: "Claude.app"},
 	{Name: "claude-code", Desc: "Claude Code CLI", Cask: true, Tier: Daily, Brew: "claude-code@latest"},
-	{Name: "docker", Desc: "Docker Desktop", Cask: true, Tier: Daily, Brew: "docker-desktop", App: "Docker.app"},
+	{Name: "docker", Desc: "Docker Desktop", Cask: true, Tier: Daily, Brew: "docker-desktop", AppBundle: "Docker.app"},
 
-	// ultimate: nice to have, not daily
 	{Name: "ffmpeg", Desc: "media swiss army knife", Tier: Ultimate, Brew: "ffmpeg", Apt: "ffmpeg", Dnf: "ffmpeg"},
 	{Name: "iperf3", Desc: "network throughput testing", Tier: Ultimate, Brew: "iperf3", Apt: "iperf3", Dnf: "iperf3"},
-	{Name: "discord", Desc: "Discord", Cask: true, Tier: Ultimate, Brew: "discord", App: "Discord.app"},
-	{Name: "obs", Desc: "screen recording / streaming", Cask: true, Tier: Ultimate, Brew: "obs", App: "OBS.app"},
-	{Name: "betterdisplay", Desc: "display management", Cask: true, Tier: Ultimate, Brew: "betterdisplay", App: "BetterDisplay.app"},
-	{Name: "hidden-bar", Desc: "menu bar tidying", Cask: true, Tier: Ultimate, Brew: "hiddenbar", App: "Hidden Bar.app"},
-	{Name: "firefox", Desc: "Firefox", Cask: true, Tier: Ultimate, Brew: "firefox", App: "Firefox.app"},
-	{Name: "vlc", Desc: "media player", Cask: true, Tier: Ultimate, Brew: "vlc", App: "VLC.app"},
-	{Name: "zoom", Desc: "video calls", Cask: true, Tier: Ultimate, Brew: "zoom", App: "zoom.us.app"},
-	{Name: "anydesk", Desc: "remote desktop", Cask: true, Tier: Ultimate, Brew: "anydesk", App: "AnyDesk.app"},
-	{Name: "tailscale", Desc: "mesh VPN", Cask: true, Tier: Ultimate, Brew: "tailscale-app", App: "Tailscale.app"},
+	{Name: "discord", Desc: "Discord", Cask: true, Tier: Ultimate, Brew: "discord", AppBundle: "Discord.app"},
+	{Name: "obs", Desc: "screen recording / streaming", Cask: true, Tier: Ultimate, Brew: "obs", AppBundle: "OBS.app"},
+	{Name: "betterdisplay", Desc: "display management", Cask: true, Tier: Ultimate, Brew: "betterdisplay", AppBundle: "BetterDisplay.app"},
+	{Name: "hidden-bar", Desc: "menu bar tidying", Cask: true, Tier: Ultimate, Brew: "hiddenbar", AppBundle: "Hidden Bar.app"},
+	{Name: "firefox", Desc: "Firefox", Cask: true, Tier: Ultimate, Brew: "firefox", AppBundle: "Firefox.app"},
+	{Name: "vlc", Desc: "media player", Cask: true, Tier: Ultimate, Brew: "vlc", AppBundle: "VLC.app"},
+	{Name: "zoom", Desc: "video calls", Cask: true, Tier: Ultimate, Brew: "zoom", AppBundle: "zoom.us.app"},
+	{Name: "anydesk", Desc: "remote desktop", Cask: true, Tier: Ultimate, Brew: "anydesk", AppBundle: "AnyDesk.app"},
+	{Name: "tailscale", Desc: "mesh VPN", Cask: true, Tier: Ultimate, Brew: "tailscale-app", AppBundle: "Tailscale.app"},
 }
 
 func ByName(name string) (Item, bool) {

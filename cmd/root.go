@@ -86,21 +86,21 @@ func runSetup(cmd *cobra.Command, args []string) error {
 
 	if p.doDotfiles {
 		fmt.Println("\n==> Dotfiles")
-		if err := dotfiles.Setup(dotfilesRepo, dryRun); err != nil {
+		if err := dotfiles.Link(dotfilesRepo, dryRun); err != nil {
 			fmt.Printf("  dotfiles skipped: %v\n", err)
 		}
 	}
 
 	if hasItem(p.items, "fzf") {
 		fmt.Println("\n==> fzf-git.sh")
-		if err := extras.FzfGit(dryRun); err != nil {
+		if err := extras.CloneZshrcFzfGit(dryRun); err != nil {
 			fmt.Printf("  failed: %v\n", err)
 		}
 	}
 
 	if hasItem(p.items, "zsh") {
 		fmt.Println("\n==> oh-my-zsh + plugins + powerlevel10k")
-		if err := extras.ZshEnv(dryRun); err != nil {
+		if err := extras.CloneZshrcOhMyZsh(dryRun); err != nil {
 			fmt.Printf("  failed: %v\n", err)
 		}
 	}

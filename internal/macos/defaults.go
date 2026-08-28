@@ -42,6 +42,8 @@ func run(dryRun bool, name string, args ...string) error {
 	return cmd.Run()
 }
 
+const cmdSpaceHotkey = "Command-49"
+
 const capsMapping = `{"UserKeyMapping":[{"HIDKeyboardModifierMappingSrc":0x700000039,"HIDKeyboardModifierMappingDst":0x7000000E0}]}`
 
 const capsAgentPlist = `<?xml version="1.0" encoding="UTF-8"?>
@@ -84,8 +86,7 @@ func raycastHotkey(dryRun bool) error {
 		"-dict-add", "64", "<dict><key>enabled</key><false/></dict>"); err != nil {
 		return err
 	}
-	// Command-49 is Cmd-Space; must be written before Raycast launches to be picked up
-	if err := run(dryRun, "defaults", "write", "com.raycast.macos", "raycastGlobalHotkey", "-string", "Command-49"); err != nil {
+	if err := run(dryRun, "defaults", "write", "com.raycast.macos", "raycastGlobalHotkey", "-string", cmdSpaceHotkey); err != nil {
 		return err
 	}
 	if err := run(dryRun, "killall", "cfprefsd"); err != nil {

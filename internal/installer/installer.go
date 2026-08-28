@@ -30,8 +30,7 @@ type Installer interface {
 func Detect() (Installer, error) {
 	if runtime.GOOS == "darwin" {
 		brewOnPath()
-		// new brew's ask mode y/n-prompts whenever dependencies are involved
-		os.Setenv("HOMEBREW_NO_ASK", "1")
+		disableBrewAskMode()
 		return &Brew{}, nil
 	}
 	if _, err := exec.LookPath("apt-get"); err == nil {
@@ -43,10 +42,6 @@ func Detect() (Installer, error) {
 	return nil, fmt.Errorf("no supported package manager found (need brew, apt-get, or dnf)")
 }
 
-// One password prompt for the whole run. A warm sudo timestamp isn't enough:
-// brew wipes it on purpose (brew.sh runs `sudo --reset-timestamp`), so the
-// password is kept in a private temp file behind SUDO_ASKPASS, which makes
-// brew call `sudo -A` and fetch it instead of prompting. Removed on exit.
 func SudoSession(dryRun bool) func() {
 	if dryRun {
 		return func() {}
@@ -57,23 +52,37 @@ func SudoSession(dryRun bool) func() {
 		fmt.Println("  couldn't authorize sudo; installs may prompt individually")
 		return func() {}
 	}
-
-	cleanup := func() {}
-	if password != "" {
-		if dir, err := os.MkdirTemp("", "noob-cli-sudo-*"); err == nil {
-			pwFile := filepath.Join(dir, "pw")
-			script := filepath.Join(dir, "askpass.sh")
-			if os.WriteFile(pwFile, []byte(password+"\n"), 0o600) == nil &&
-				os.WriteFile(script, []byte("#!/bin/sh\nexec cat "+pwFile+"\n"), 0o700) == nil {
-				os.Setenv("SUDO_ASKPASS", script)
-				cleanup = func() {
-					os.Unsetenv("SUDO_ASKPASS")
-					os.RemoveAll(dir)
-				}
-			}
-		}
+	removeAskpass := installSudoAskpass(password)
+	stopRefreshing := refreshSudoUntilStopped()
+	return func() {
+		stopRefreshing()
+		removeAskpass()
 	}
+}
 
+func installSudoAskpass(password string) func() {
+	if password == "" {
+		return func() {}
+	}
+	dir, err := os.MkdirTemp("", "noob-cli-sudo-*")
+	if err != nil {
+		return func() {}
+	}
+	pwFile := filepath.Join(dir, "pw")
+	script := filepath.Join(dir, "askpass.sh")
+	if os.WriteFile(pwFile, []byte(password+"\n"), 0o600) != nil ||
+		os.WriteFile(script, []byte("#!/bin/sh\nexec cat "+pwFile+"\n"), 0o700) != nil {
+		os.RemoveAll(dir)
+		return func() {}
+	}
+	os.Setenv("SUDO_ASKPASS", script)
+	return func() {
+		os.Unsetenv("SUDO_ASKPASS")
+		os.RemoveAll(dir)
+	}
+}
+
+func refreshSudoUntilStopped() func() {
 	stop := make(chan struct{})
 	go func() {
 		ticker := time.NewTicker(60 * time.Second)
@@ -87,13 +96,9 @@ func SudoSession(dryRun bool) func() {
 			}
 		}
 	}()
-	return func() {
-		close(stop)
-		cleanup()
-	}
+	return func() { close(stop) }
 }
 
-// returns ("", true) when there's no TTY but plain `sudo -v` worked
 func askPassword() (string, bool) {
 	if !term.IsTerminal(int(os.Stdin.Fd())) {
 		return "", run("sudo", "-v") == nil
@@ -105,14 +110,18 @@ func askPassword() (string, bool) {
 		if err != nil {
 			return "", run("sudo", "-v") == nil
 		}
-		check := exec.Command("sudo", "-S", "-v")
-		check.Stdin = strings.NewReader(string(raw) + "\n")
-		if check.Run() == nil {
+		if validatePassword(string(raw)) {
 			return string(raw), true
 		}
 		fmt.Println("Sorry, try again.")
 	}
 	return "", false
+}
+
+func validatePassword(password string) bool {
+	cmd := exec.Command("sudo", "-S", "-v")
+	cmd.Stdin = strings.NewReader(password + "\n")
+	return cmd.Run() == nil
 }
 
 func run(name string, args ...string) error {
@@ -125,8 +134,12 @@ func run(name string, args ...string) error {
 
 type Brew struct{}
 
-// piping curl into bash would make the installer's stdin the pipe, so it
-// couldn't prompt for sudo — download first, then run with the terminal attached
+const homebrewInstallerURL = "https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh"
+
+func disableBrewAskMode() {
+	os.Setenv("HOMEBREW_NO_ASK", "1")
+}
+
 func (b *Brew) Bootstrap(dryRun bool) error {
 	if brewOnPath() {
 		return nil
@@ -135,25 +148,28 @@ func (b *Brew) Bootstrap(dryRun bool) error {
 		fmt.Println("[dry-run] would install Homebrew (and Xcode Command Line Tools with it)")
 		return nil
 	}
-	fmt.Println("Homebrew not found, installing it first (you'll be asked for your password)...")
-	script := filepath.Join(os.TempDir(), "brew-install.sh")
-	if err := run("curl", "-fsSL", "-o", script,
-		"https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh"); err != nil {
-		return err
-	}
-	defer os.Remove(script)
-	// safe to skip the installer's own prompts: SudoKeepalive already cached credentials
-	cmd := exec.Command("/bin/bash", script)
-	cmd.Env = append(os.Environ(), "NONINTERACTIVE=1")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
+	fmt.Println("Homebrew not found, installing it first...")
+	if err := downloadAndRunUnattended(homebrewInstallerURL); err != nil {
 		return err
 	}
 	if !brewOnPath() {
 		return fmt.Errorf("brew still not found after install")
 	}
 	return nil
+}
+
+func downloadAndRunUnattended(url string) error {
+	script := filepath.Join(os.TempDir(), "noob-cli-installer.sh")
+	if err := run("curl", "-fsSL", "-o", script, url); err != nil {
+		return err
+	}
+	defer os.Remove(script)
+	cmd := exec.Command("/bin/bash", script)
+	cmd.Env = append(os.Environ(), "NONINTERACTIVE=1")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	return cmd.Run()
 }
 
 func brewOnPath() bool {
@@ -185,23 +201,20 @@ func (b *Brew) installedSet() map[string]bool {
 	return set
 }
 
-// covers apps installed outside brew (manual downloads), which would make
-// `brew install --cask` fail with "already an App at ..."
-func appExists(app string) bool {
-	if app == "" {
+func appBundleInstalled(bundle string) bool {
+	if bundle == "" {
 		return false
 	}
 	home, _ := os.UserHomeDir()
 	for _, dir := range []string{"/Applications", filepath.Join(home, "Applications")} {
-		if _, err := os.Stat(filepath.Join(dir, app)); err == nil {
+		if _, err := os.Stat(filepath.Join(dir, bundle)); err == nil {
 			return true
 		}
 	}
 	return false
 }
 
-func shortBrewName(name string) string {
-	// tap-qualified and versioned names show up unqualified in `brew list`
+func brewListName(name string) string {
 	if i := strings.LastIndex(name, "/"); i >= 0 {
 		name = name[i+1:]
 	}
@@ -212,7 +225,7 @@ func (b *Brew) Preinstalled(items []catalog.Item) map[string]bool {
 	set := b.installedSet()
 	out := map[string]bool{}
 	for _, it := range items {
-		if set[it.Brew] || set[shortBrewName(it.Brew)] || appExists(it.App) {
+		if set[it.Brew] || set[brewListName(it.Brew)] || appBundleInstalled(it.AppBundle) {
 			out[it.Name] = true
 		}
 	}

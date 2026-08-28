@@ -22,15 +22,12 @@ func clone(url, dir string, dryRun bool) error {
 	return cmd.Run()
 }
 
-// .zshrc sources ~/fzf-git.sh/fzf-git.sh, so the clone has to live at that path
-func FzfGit(dryRun bool) error {
+func CloneZshrcFzfGit(dryRun bool) error {
 	home, _ := os.UserHomeDir()
 	return clone("https://github.com/junegunn/fzf-git.sh.git", filepath.Join(home, "fzf-git.sh"), dryRun)
 }
 
-// .zshrc expects oh-my-zsh with its plugins and the p10k theme as custom clones,
-// not the brew formulas
-func ZshEnv(dryRun bool) error {
+func CloneZshrcOhMyZsh(dryRun bool) error {
 	home, _ := os.UserHomeDir()
 	omz := filepath.Join(home, ".oh-my-zsh")
 	custom := filepath.Join(omz, "custom")

@@ -15,7 +15,7 @@ var dotfilesInitCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Harvest this machine's configs into ~/dotfiles and symlink them back",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return dotfiles.Init(dryRun)
+		return dotfiles.Harvest(dryRun)
 	},
 }
 
@@ -23,7 +23,7 @@ var dotfilesLinkCmd = &cobra.Command{
 	Use:   "link",
 	Short: "Symlink ~/dotfiles configs into place (clones first with --dotfiles-repo)",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return dotfiles.Setup(dotfilesRepo, dryRun)
+		return dotfiles.Link(dotfilesRepo, dryRun)
 	},
 }
 
