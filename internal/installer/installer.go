@@ -45,22 +45,35 @@ func run(name string, args ...string) error {
 type Brew struct{}
 
 func (b *Brew) ensure(dryRun bool) error {
-	if _, err := exec.LookPath("brew"); err == nil {
+	if brewOnPath() {
 		return nil
-	}
-	for _, p := range []string{"/opt/homebrew/bin", "/usr/local/bin"} {
-		if _, err := os.Stat(p + "/brew"); err == nil {
-			os.Setenv("PATH", p+":"+os.Getenv("PATH"))
-			return nil
-		}
 	}
 	if dryRun {
 		fmt.Println("[dry-run] would install Homebrew")
 		return nil
 	}
 	fmt.Println("Homebrew not found, installing it first...")
-	return run("/bin/bash", "-c",
-		`curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | /bin/bash`)
+	if err := run("/bin/bash", "-c",
+		`curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | /bin/bash`); err != nil {
+		return err
+	}
+	if !brewOnPath() {
+		return fmt.Errorf("brew still not found after install")
+	}
+	return nil
+}
+
+func brewOnPath() bool {
+	if _, err := exec.LookPath("brew"); err == nil {
+		return true
+	}
+	for _, p := range []string{"/opt/homebrew/bin", "/usr/local/bin"} {
+		if _, err := os.Stat(p + "/brew"); err == nil {
+			os.Setenv("PATH", p+":"+os.Getenv("PATH"))
+			return true
+		}
+	}
+	return false
 }
 
 func (b *Brew) installedSet() map[string]bool {

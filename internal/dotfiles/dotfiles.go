@@ -16,6 +16,7 @@ type Link struct {
 
 var Links = []Link{
 	{Repo: "zsh/.zshrc", Home: ".zshrc"},
+	{Repo: "zsh/.p10k.zsh", Home: ".p10k.zsh"},
 	{Repo: "tmux/.tmux.conf", Home: ".tmux.conf"},
 	{Repo: "git/.gitconfig", Home: ".gitconfig"},
 	{Repo: "config/nvim", Home: ".config/nvim"},

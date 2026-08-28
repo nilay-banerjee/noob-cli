@@ -85,6 +85,13 @@ func runSetup(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	if hasItem(p.items, "zsh") {
+		fmt.Println("\n==> oh-my-zsh + plugins + powerlevel10k")
+		if err := extras.ZshEnv(dryRun); err != nil {
+			fmt.Printf("  failed: %v\n", err)
+		}
+	}
+
 	for _, s := range p.settings {
 		fmt.Printf("\n==> Setting: %s\n", s.Desc)
 		if err := s.Apply(dryRun); err != nil {

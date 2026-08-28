@@ -9,6 +9,7 @@ shows what changed.
 | Live path | Repo path |
 |---|---|
 | `~/.zshrc` | `~/dotfiles/zsh/.zshrc` |
+| `~/.p10k.zsh` | `~/dotfiles/zsh/.p10k.zsh` |
 | `~/.tmux.conf` | `~/dotfiles/tmux/.tmux.conf` |
 | `~/.gitconfig` | `~/dotfiles/git/.gitconfig` |
 | `~/.config/nvim` | `~/dotfiles/config/nvim` |

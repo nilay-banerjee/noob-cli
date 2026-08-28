@@ -68,9 +68,14 @@ installer lists it under "needs manual install" with a hint instead of failing.
 
 ## Extras (not packages)
 
-When fzf is selected, noob-cli also clones
-[fzf-git.sh](https://github.com/junegunn/fzf-git.sh) to `~/fzf-git.sh`, because
-`.zshrc` sources it for git-aware fzf keybindings.
+Git clones that `.zshrc` depends on, done automatically after installs:
+
+- fzf selected → [fzf-git.sh](https://github.com/junegunn/fzf-git.sh) to `~/fzf-git.sh`
+- zsh selected → [oh-my-zsh](https://github.com/ohmyzsh/ohmyzsh) to `~/.oh-my-zsh`, plus
+  zsh-autosuggestions and zsh-syntax-highlighting into its custom plugins and
+  [powerlevel10k](https://github.com/romkatv/powerlevel10k) into its custom themes.
+  The omz plugin system loads these clones; the brew formulas of the same plugins
+  cover non-omz setups (Linux servers).
 
 ## Deliberately not in the catalog
 
