@@ -77,7 +77,7 @@ Revert any of them with `defaults delete <domain> <key>` and the same killall.
 
 ## dock-apps
 
-Pins Arc, Spotify, Ghostty, Discord, Obsidian, and Tailscale to the Dock by appending
+Pins Arc, Spotify, Ghostty, Discord, Obsidian, and Slack to the Dock by appending
 to `com.apple.dock persistent-apps`, then restarts the Dock. Append-only: existing
 Dock items are never removed or reordered, apps not installed are skipped.
 

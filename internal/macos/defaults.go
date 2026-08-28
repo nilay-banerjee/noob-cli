@@ -19,7 +19,7 @@ var Settings = []Setting{
 	{Name: "raycast-hotkey", Desc: "Give Cmd-Space to Raycast: disable Spotlight hotkey, set Raycast's, launch it", Apply: raycastHotkey},
 	{Name: "fast-key-repeat", Desc: "Key repeat faster than System Settings allows", Apply: fastKeyRepeat},
 	{Name: "finder-dock", Desc: "Finder/Dock sanity: extensions, hidden files, path bar, snappier Dock", Apply: finderDock},
-	{Name: "dock-apps", Desc: "Pin the usual apps to the Dock (Arc, Spotify, Ghostty, Discord, Obsidian, Tailscale)", Apply: dockApps},
+	{Name: "dock-apps", Desc: "Pin the usual apps to the Dock (Arc, Spotify, Ghostty, Discord, Obsidian, Slack)", Apply: dockApps},
 }
 
 func ByName(name string) (Setting, bool) {
@@ -113,7 +113,7 @@ var dockPins = []string{
 	"/Applications/Ghostty.app",
 	"/Applications/Discord.app",
 	"/Applications/Obsidian.app",
-	"/Applications/Tailscale.app",
+	"/Applications/Slack.app",
 }
 
 func dockApps(dryRun bool) error {
